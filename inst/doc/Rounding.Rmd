@@ -1,0 +1,174 @@
+---
+title: Rounding to Decimal Digits in Binary
+author: Martin Mächler
+date: '1st version: Jan. 2020; rendered on `r Sys.Date()`'
+output:
+  html_vignette:
+    css: style.css
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Rounding to Decimal Digits in Binary}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{round}
+---
+
+## Intro
+
+In R (and its predecessors S and S+), we have always known and often used `round(x, digits)` to round a numeric
+(or complex) vector of numbers `x` to `digits` decimals after the (decimal) point.
+However, not many R users (nor scientists for that matter) have been aware of the fact that such
+rounding is not trivial because our computers use binary (_base_ __2__) arithmetic and we are rounding to
+decimal digits, aka decimals, i.e., in _base_ __10__.
+
+On the topic of floating point computation, we have had the _most_ frequently asked question (FAQ) about R,
+the infamous [R FAQ 7.31][],
+and in 2017, Romain François even created an R package [seven31][] (not on CRAN) to help useRs exploring what we say in the FAQ.
+
+<!-- ~/R/MM/NUMERICS/round-even-odd.R  -->
+Recently, there has been an official R bug report (on R's bugzilla), `PR#17668`
+<https://bugs.r-project.org/bugzilla/show_bug.cgi?id=17668>
+with summary title __Artificial numerical error in `round()` causing round to even to fail__.
+
+Adam Wheeler started with a shorter version (just using digits = 1,2,..,8) of the following examples and his own remarks about correctness:
+```{r}
+options(digits = 15)
+                         # R <= 3.6.x :
+round(55.5, 0)           # 56 <- correct
+round(55.55, 1)          # 55.5
+round(55.555, 2)         # 55.55
+round(55.5555, 3)        # 55.556 <- correct
+round(55.55555, 4)       # 55.5555
+round(55.555555, 5)      # 55.55555
+round(55.5555555, 6)     # 55.555555
+round(55.55555555, 7)    # 55.5555556 <- correct
+round(55.555555555, 8)   # 55.55555555
+round(55.5555555555, 9)  # 55.555555555
+round(55.55555555555,10) # 55.5555555556 <- correct
+round(55.555555555555,11)# 55.55555555556 <- correct
+```
+
+Whereas the exact result of the R code above currently depends on your version of R, our `round` package's `roundX(x, dig, version = "r1.C")` provides these, using the same C source code as R 3.6.2 (note I have adopted the convention to use  "r<n>.C"  for round()ing versions where R calls package C code):
+```{r}
+require(round)
+
+roundX(55.5, 0, "r1.C")
+roundX(55.55, 1, "r1.C")
+roundX(55.555, 2, "r1.C")
+roundX(55.5555, 3, "r1.C")
+roundX(55.55555, 4, "r1.C")
+roundX(55.555555, 5, "r1.C")
+roundX(55.5555555, 6, "r1.C")
+roundX(55.55555555, 7, "r1.C")
+roundX(55.555555555, 8, "r1.C")
+roundX(55.5555555555, 9, "r1.C")
+roundX(55.55555555555,10, "r1.C")
+roundX(55.555555555555,11, "r1.C")
+```
+
+He used his own C code, to see what happens in R's C code for `round()` and proposed to simplify the C code, not doing offset calculations which substract the integer part `intx`, round and re-add `intx`.
+I've committed a version of his proposal to R-devel (`svn r77609`, on 2019-12-21) but found that the simplification improved the above examples in that it always rounded to even, but it clearly broke cases that were working correctly in R 3.6.x.  That version is available with our
+`roundX(*, version = "r0.C")`  (Version `0` as it is even simpler than version `1`).
+
+One CRAN package had relied on  `round(x, digits = .Machine$integer.max)` to return integers unchanged, but
+```{r}
+roundX(c(-2,2), digits = .Machine$integer.max, version = "r0.C") # non-sense
+```
+and there were less extreme cases of relatively large `digits` had stopped working with "r0".  Here, showing two `roundX()` versions via simple wrapper `roundAll()`:
+```{r, integer-x-large-digs}
+i <- c(-1,1)* 2^(33:16)
+stopifnot(i == floor(i)) # are integer valued
+roundAll(i, digits = 300, versions = c("r0.C", "r1.C"))
+```
+
+Looking at these, I also found that internally, R's round had done
+`digits <- pmin(308, digits)`, i.e., truncated digits larger than 308 which is clearly not good enough for very small numbers (in absolute value),
+```{r, small-x-large-digs}
+e <- 5.555555555555555555555e-308
+d <- 312:305 ; names(d) <- paste0("d=", d)
+roundAll(e, d, versions = c("r0.C", "r1.C", "r2.C"))
+```
+
+As I was embarrassed to have blundered, I've worked and committed what now corresponds to
+`roundX(*, version = "r2.C")` to R-devel (`svn r77618`, on 2019-12-24, 16:11).
+
+Also, Jeroen Ooms, maintainer of CRAN package `jsonlite`, contacted the CRAN team and me about the change in R-devel which broke one regression test of that package, and on Dec 27, he noticed that R 3.6.2's version of `round()` was compatible with the (C library dependent) versions of
+`sprintf()` and also with R's `format()` whereas the R-devel versions where not, for his example:
+
+```{r, JO-ex-sprintf}
+x <- 9.18665
+format(x, digits = 5) #  "9.1867"
+sprintf("%.4f", x)    #  "9.1867"
+## but -- showing now
+roundAll(x, 4)
+
+## but note that
+print(x, digits=18)
+```
+
+which (typically) shows `9.1866500000000002`, i.e., a number closer to 9.1867 than to 9.1866, and so really should be rounded up, not down.
+However, that is partly wrong: Whereas it is true that it's closer to 9.1867 than to 9.1866, one must be aware that these two decimal numbers are __neither__ exactly representable in binary double precision, and a further careful look shows actually the double precision version of these rounded numbers do have the exact same distance to `x` and that the main principle *round to nearest* here gives a tie:
+
+```{r, JO-ex-diff}
+print(rbind(9.1866, 9.18665, 9.1867), digits=18)
+options(digits=7) # revert to default
+(dx <- c(9.1866, 9.1867) - x) # [1] -4.99999999998835e-05  4.99999999998835e-05
+diff(abs(dx)) # is zero !
+```
+
+and because of the tie, the *round to even* rule must apply which means rounding *down* to 9.1866, and so both libc's printf and hence R's `sprintf()` are as wrong as R 3.6.x has been, and indeed all our `roundX()` versions apart from `"sprintf"` and the '"r1*"' (previous R) ones, do round down:
+
+```{r, roundAll-x}
+roundAll(x, 4)
+```
+
+Finally, I think we've seen the light and on one hand recalled what we have known for long (but most R users will not be aware of at all)
+
+> 1. Almost all finite decimal fractions are __not__ (exactly) representable as binary
+> double precision numbers,
+
+and consequently,
+
+> 2. *round to nearest* applies much more often _directly_ rather than via the
+> tie breaking rule *round to even* even for the case where the decimal fraction ends in a `5`.
+
+and hence, a _"correct"_ implementation must really _measure, not guess_ which of the two possible decimals is closer to `x`.
+This lead to our R level algorithm  `round_r3()`  which is the workhorse used by
+`roundX(x,d, version = "r3")` :
+
+```{r, round_r3-def}
+round_r3
+```
+
+and it's two C level versions `"r3.C"` (using `long double`) and `"r3d.C"` (_"d"_ for _"double"_, as it uses double precision only).
+
+My current proposal is to use (the equivalent of) `"r3d.C"` for R 4.0.0, i.e. from April 2020,
+as not using `long double` and being very close to the R level implementation `"r3"` (i.e., `round_r3()`) renders it potentially less platform dependent and easier to explain and document.
+
+Lastly, note that the original set of examples is then treated differently from all previous proposals:
+
+```{r, roundAll-55.5}
+                                op <- options(digits = 15, width = 2*3*23)
+roundAll(55.5, 0)
+roundAll(55.55, 1)
+roundAll(55.555, 2)
+roundAll(55.5555, 3)
+roundAll(55.55555, 4)
+roundAll(55.555555, 5)
+roundAll(55.5555555, 6)
+roundAll(55.55555555, 7)
+roundAll(55.555555555, 8)
+roundAll(55.5555555555, 9)
+roundAll(55.55555555555,10)
+roundAll(55.555555555555,11);   options(op)
+```
+
+
+[R FAQ 7.31]: https://cran.r-project.org/doc/FAQ/R-FAQ.html#Why-doesn_0027t-R-think-these-numbers-are-equal_003f
+
+[seven31]: https://github.com/ThinkR-open/seven31 "seven31"
+
+
+### Session information
+```{r, echo=FALSE}
+print(sessionInfo(), locale=FALSE)
+```

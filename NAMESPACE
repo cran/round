@@ -1,0 +1,28 @@
+useDynLib(round, .registration = TRUE) # <--> src/init.c
+
+importFrom("stats",
+           runif)
+
+## We do *NOT* import from  Rmpfr here,
+## as we only __suggest__ the package in ./DESCRIPTION
+##  ==> where we use it we check every time if it's load()able ...
+
+## importFrom("sfsmisc"
+##          , eaxis
+##          , mult.fig
+##      )
+
+
+### ----------------------- Exporting ----------------------------
+
+## For now export everything (but the C routines)
+export(
+    roundVersions, roundX, roundAll
+  , round_r3
+  , logB, ilogb
+  , nearbyint
+  , fpclassify, isnormal, signbit
+  , nextafter
+  , nexttoward
+  , randI
+)

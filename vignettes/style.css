@@ -6,7 +6,7 @@
 body {
   background-color: #fff;
   margin: 1em auto;
-  max-width: 700px;
+  max-width: 1024px; /* MMä: modified */
   overflow: visible;
   padding-left: 2em;
   padding-right: 2em;

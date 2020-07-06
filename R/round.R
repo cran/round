@@ -62,12 +62,12 @@ round_r3 <- function(x, d, info=FALSE, check=TRUE) {
     ## else  # "regular" digits ---------------------------
     p10 <- 10^d
     x10 <- as.vector(p10*x) # drop attributes for computation
-    xd <- (i10 <- floor(x10)) / p10
-    xu <-       ceiling(x10)  / p10
+    xd <- (i10 <- floor(x10)) / p10 # = x, rounded [d]own
+    xu <-       ceiling(x10)  / p10 # = x, rounded [u]p
     ## should have xd <= x <= xu
     D <- (xu - x) - (x - xd)
     ## D >  0 ==> xu is farther away from x than xd ==> round *down*
-    ## D <  0 ==> xd is farther  ..   ..  .. ..  .. ==> round *up*
+    ## D <  0 ==> xu is closer  to        x   .. .. ==> round *up*
     ## D == 0 ==> both in *same* distance: round "to even"
     e <- i10 %% 2 # = 1  <==>  i10 is odd <==> "even" is *up*
     r <- x

@@ -324,8 +324,9 @@ double fround3d(double x, double digits, int trace_lev) {
 	//  D =  du - dd
 	//  return sgn * ((D < 0 || (is_odd_i10 && D == 0)) ? xu : xd);
 
-	// FIXME: Remove, once windows uses a more modern toolchain (?)
-	// Use intermediate var so compiler (@ 32-bit windows) does not optimize wrongly:
+	// FIXME: This tries (but fails) to entice the 32-bit Windows compiler to
+	// -----  *not* optimize wrongly:
+	// NB: using 'trace_lev' *does* fix the problem there !!
 	int take_xu = du < dd || (fmod(i10, 2.) == 1 && du == dd);
 #ifdef _WIN32 // fake some action on take_xu
 	take_xu += (take_xu - take_xu)*123 - (int)(i10 - i10);

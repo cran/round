@@ -4,6 +4,24 @@
 \title{\pkg{round} R package  News}
 \encoding{UTF-8}
 
+\section{Changes in version 0.12-2 [2020-07-04]}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item in \code{roundX()}'s help page example, consider numerical noise
+      when checking for equality of different versions.
+
+      \item The \file{Rounding} vignette now gives \R 4.0.0's state and
+      mentions mathematical \emph{exact rounding} via rational arithmetic.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item Tweaked \file{tests/} slightly so they work on an \R configured
+      with \command{--no-long-double}.
+    }
+  }
+}
+
 \section{Changes in version 0.12-1 [2020-01-14]}{
   \subsection{NEW FEATURES}{
     \itemize{

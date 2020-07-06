@@ -184,20 +184,21 @@ noquote(cbind(d = nd2, formatF(rx))[1:140,])
 
 ## Error, assuming "r3" to be best, as it *does* really go to nearest:
 Err <- rx - rx[, "r3"]
-colSums(Err != 0)  ## --> old R "r1*" is best here, then sprintf (among non-r3):
+## careful : allowing small "noise" differences:
+tErr <- abs(Err) > 1e-3* 10^-nd2 # "truly" differing from "r3"
+colSums(tErr)  ## --> old R "r1*" is best here, then sprintf (among non-r3):
 ## For F30 Linux 64-bit (gcc),  and this selection of cases, r0+r2 are worst; r1 is best
-## sprintf   r0.C   r1.C  r1a.C    r2.C  r2a.C   r3.C  r3d.C   r3
-##   15562  19783  14083  14083   19783  19783     10      5    0  {  long }
-##    1167   1457   1290   1290    1457   1457      0      0    0  { !long }
-
-if(long) { ## where does new "r3.C" version differ from "r3" :
+## sprintf   r0.C   r1.C  r1a.C    r2.C  r2a.C   r3.C r3d.C  r3
+##   15559  19778  14078  14078   19778  19778      8     0   0  {  long }
+##    1167   1457   1290   1290    1457   1457      0     0   0  { !long }
+if(long) { ## Q: where does  "r3.C"  differ from "r3" == "r3d.C" ?    A: in 10 cases; 8 "real"
   i3D <- which(Err[,"r3.C"] != 0)
   print(cbind(d = nd2[i3D], formatF(rx[i3D,])), quote=FALSE)
   print.table(zapsmall(Err[i3D,]), zero.print = ".")# differences (not very small ones!)
 }
 
 ## Visualization of error happening (FIXME: do zapsmall()-like not count "noise")
-cumErr <- apply(Err[,colnames(rx) != "r3"] != 0, 2L, cumsum)
+cumErr <- apply(tErr[,colnames(rx) != "r3"], 2L, cumsum)
 matPm <- function(y) {
    matplot(y=y, type = "l", lwd = 2, xlab = "i", ylab = deparse(substitute(y)))
    abline(h = 0, lty=2, col="gray")
@@ -233,7 +234,7 @@ if(long && require("Matrix")) {
 }
 
 ## More digits random sample simulation tend go against "sprintf";
-## see ../tests/  %  and TODO ../vignettes/
+## see ../tests/  and also the vignette
 }
 \keyword{arith}
 \concept{Rounding}

@@ -1,0 +1,178 @@
+---
+title: Exact Decimal Rounding via Rationals
+author: Martin Mächler
+address: ETH Zurich and R Core Team
+date: 'July 23, 2020; rendered on `r Sys.Date()`'
+output:
+  html_vignette:
+    css: style.css
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Exact Decimal Rounding via Rationals}
+  %\VignetteEncoding{UTF-8}
+  %\VignetteDepends{round}
+  %\VignetteDepends{gmp}
+---
+```{r build-info, eval=FALSE, echo=FALSE}
+  setwd("~/R/Pkgs/round/vignettes")
+  rmarkdown::render("rationalRound.Rmd", clean=FALSE)
+```
+## Intro
+
+As shown in the "basic" vignette [Rounding][] of package `round`,
+rounding to decimal digits of double precision numbers is not trivial,
+mostly because most rational numbers and even most rational numbers with a finite (small) number of decimal digits are *not* exactly representable as regular (double precision) numbers in R:
+
+In communication with Steven Dirkse (@ GAMS), started on the R-devel mailing lists, then continued in private, we came to concluding his own proposal
+for _correct rounding_  as the following, using the definitions (as in [Rounding][]),
+
+Rounding to the nearest integer,
+$$
+\mathrm{round}(x) := r_0(x) := \mathrm{nearbyint}(x)
+$$
+
+and its generalization, rounding to $d$ digits,
+$$
+ \mathrm{round}(x, d) := r_0(x \cdot 10^d) / 10^d
+$$
+for all integer $d \in \mathbb{Z}$ (i.e., including negative `digits` $d$).
+
+1. all double precision numbers are rational mathematically, i.e., \(\in \mathbb{Q}\).
+2. `round(x, n)` as a mathematical function is well defined unambigously on the rationals,
+   i.e., for all \(x \in \mathbb{Q}\) with the definitions above.
+
+These two define _exact rounding_ and he would want R to use that.
+
+In the following, I will use that, via exact arithmetic with rational numbers via CRAN pkg [gmp][] (which is based on the free C library `GNU MP` aka [`GMP`][].
+
+```{r simple}
+d1 <- c(.1, .2, .3, .4, .5, .6, .7, .8, .9)
+fivers <- list(
+    d1 =    .5
+  , d2 = c( .05, .15,  .25,  .35,  .45,  .55,  .65,  .75,  .85,  .95)
+  , d3 = c(.005, .015, .025, .035, .045, .055, .065, .075, .085, .095,
+           .105, .115, .125, .135, .145, .155, .165, .175, .185, .195,
+           .205, .215, .225, .235, .245, .255, .265, .275, .285, .295,
+           .305, .315, .325, .335, .345, .355, .365, .375, .385, .395,
+           .405, .415, .425, .435, .445, .455, .465, .475, .485, .495,
+           .505, .515, .525, .535, .545, .555, .565, .575, .585, .595,
+           .605, .615, .625, .635, .645, .655, .665, .675, .685, .695,
+           .705, .715, .725, .735, .745, .755, .765, .775, .785, .795,
+           .805, .815, .825, .835, .845, .855, .865, .875, .885, .895,
+           .905, .915, .925, .935, .945, .955, .965, .975, .985, .995)
+    )
+```
+Now, "obviously" (from what I wrote before), most of the decimal fractions above are *not* exactly representable as double precision numbers, but of course *are* representable as fractions, concretely as ratios of (arbitrarily long aka _"big num"_)  integers:
+
+```{r q-fivers}
+require(gmp)
+q5er <- lapply(fivers, as.bigq)
+q5er
+as.bigz(2)^60 == max(denominator(q5er$d3))
+```
+
+Now the "exact rounding" has been available in CRAN package `gmp` since Feb.2020, but in its first versions, we usee "round up", instead of  `nearbyint()` which would _"round to even"_ as desired, as it is the IEEE default also adhered to by \R itself.
+Only from `gmp` version 0.6-1 on (
+```{r round0-roundQ}
+if(print(packageVersion("gmp")) < "0.6-1") {
+    ## From 'gmp's namespace, usually "hidden", needed here :
+    is.whole.bigq  <- gmp:::is.whole.bigq
+    biginteger_mod <- gmp:::biginteger_mod
+    .mod.bigz <- function(e1, e2) .Call(biginteger_mod, e1, e2)
+
+  ##' rounding to integer a la "nearbyint()" -- i.e. "round to even"
+  round0 <- function(x) {
+      nU <- as.bigz.bigq(xU <- x + as.bigq(1, 2)) # traditional round: .5 rounded up
+      if(any(I <- is.whole.bigq(xU))) { # I <==>  x == <n>.5 : "hard case"
+          I[I] <- .mod.bigz(nU[I], 2L) == 1L # rounded up is odd  ==> round *down*
+          nU[I] <- nU[I] - 1L
+      }
+      nU
+  }
+
+  roundQ <- function(x, digits = 0, r0 = round0) {
+      ## round(x * 10^d) / 10^d
+      p10 <- as.bigz(10) ^ digits
+      r0(x * p10) / p10
+  }
+
+  ##' round() method ==>  arguments = (x, digits)
+  round.bigq <- function(x, digits = 0) roundQ(x, digits)
+  .S3method("round","bigq", round.bigq)
+
+} else ## all the above is part of gmp >= 0.6-1 :
+  withAutoprint({
+    round0
+    roundQ
+    gmp:::round.bigq
+  })
+
+## "simple round" was used in round.bigq() for several months in 2020:
+round0s <- function(x) as.bigz.bigq(x + as.bigq(1, 2))
+```
+
+Gives here
+```{r round-x-2}
+round(q5er$d2, 1)
+round(q5er$d3, 2)
+```
+
+Now comparing these with all the `round()`ing methods from our package `round`:
+
+```{r roundAll-x-1}
+require(round)
+
+roundAllX <- function(x, digits, versions = roundVersions) {
+    xQ <- as.bigq(x)
+    M <- cbind(roundAll(x, digits, versions=versions)
+             , SxctQ = asNumeric(roundQ(xQ, digits, r0=round0s))
+             ,  xctQ = asNumeric(roundQ(xQ, digits))
+               )
+    rownames(M) <- format(x)
+    M
+}
+
+(rA1 <- roundAllX(fivers$d2, 1))
+```
+
+with some differences already, and more with `digits=2` rounding:
+
+```{r roundAll-x-2}
+(rA2 <- roundAllX(fivers$d3, 2))
+```
+
+Not sure, if exact equality is the correct test here.
+We should really check only if rounding _up_ vs rounding _down_ happens in each case,
+but the rounded numbers may actually differ at by a few bits
+(invisibly when printed by R!) :
+
+
+```{r eqAll-1}
+symnum(rA1 == rA1[,"xctQ"])
+```
+
+```{r eqAll-2}
+symnum(rA2 == rA2[,"xctQ"])
+```
+
+
+[Wikipedia, Rounding]: https://en.wikipedia.org/wiki/Rounding
+
+[Wikipedia, Round half to even]: https://en.wikipedia.org/wiki/Rounding#Round_half_to_even
+
+
+[`GMP`]: https://gmplib.org/
+
+[gmp]: https://CRAN.R-project.org/package=gmp
+[gmp-dev]: https://forgemia.inra.fr/sylvain.jasson/gmp
+
+[round]: https://CRAN.R-project.org/package=round
+
+[Rounding]: https://CRAN.R-project.org/package=round/vignettes/Rounding.html
+
+
+### Session information
+(Note half a dozen non-standard packages present only as dependences of `rmarkdown` we use for rendering this vignette)
+```{r, echo=FALSE}
+print(sessionInfo(), locale=FALSE)
+```

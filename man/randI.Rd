@@ -18,7 +18,8 @@ randI(n, d)
   numbers \code{N} where each \eqn{N} has exactly \code{d} digits;
   equivalently,
   \deqn{10^{d-1} \le N_i < 10^d,}{10^(d-1) <= N[i] < 10^d,}
-  \bold{and} every \eqn{N_i}{N[i]} appears with the same probability.
+  \bold{and} every \eqn{N_i}{N[i]} appears with the same probability
+  \eqn{1 / (9\cdot 10^{d-1})}{1 / (9*10^(d-1))}
 }
 \details{This is based on \code{\link{runif}()} and not
   \code{\link{sample}()}, which for now also makes it less \R version
@@ -31,7 +32,7 @@ randI(n, d)
 }
 \examples{
 plot(
- T2 <- table(randI(1e6, 2)))
+ T2 <- table(randI(1e6, 2))) ; abline(h = 1e6 / (9*10^(2 - 1)), lty=2, col="gray70")
 chisq.test(T2) # typically not at all significant
 T3 <- table(randI(1e6, 3))
 chisq.test(T3)

@@ -4,7 +4,8 @@ roundVersions <- c("sprintf" ## C-versions must end with ".C" -- do *sort* histo
                  , "r3")
 ## hidden:
 roundVer.C  <- grep("\\.C$", roundVersions, value=TRUE)
-nr.R.ver <- length(roundVersions) - length(roundVer.C)
+## nr.R.ver <- length(roundVersions) - length(roundVer.C)
+roundVer.R  <- grep("\\.C$", roundVersions, value=TRUE, invert=TRUE)
 
 ##' round() with several / all `roundVersions` :
 roundAll <- function(x, digits, versions = roundVersions)
@@ -17,7 +18,7 @@ roundX <- function(x, digits, version = roundVersions, trace = 0) {
     version <- match.arg(version)
     if(length(digits) == 0) stop("'digits' is of length 0")
     if (anyNA(digits)) stop("'digits' has NAs")
-    if(match(version, roundVersions) <= nr.R.ver) ## have R version;
+    if(version %in% roundVer.R) ## for R versions, restrict 'digits'
         digits <- sign(digits) * pmin(9999, abs(floor(digits + 0.5)))
     switch(version,
            "sprintf" = {
@@ -75,4 +76,11 @@ round_r3 <- function(x, d, info=FALSE, check=TRUE) {
     r[ i] <- xu[ i]
     r[!i] <- xd[!i]
     if(info) list(r=r, D=D, e=e) else r
+}
+
+
+## Not exported, used to make  'R CMD check <pkg>'  be faster *or* more extensive:
+doExtras <- function(int = interactive()) {
+    int || nzchar(Sys.getenv("R_round_check_extra")) ||
+        identical("true", unname(Sys.getenv("R_PKG_CHECKING_doExtras")))
 }

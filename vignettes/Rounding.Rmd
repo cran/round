@@ -251,10 +251,13 @@ his own rational approach in the following way -- which I like to present as it 
 
 These two define _exact rounding_ and he would want R to use that.
 Note for that, R would have to use exact arithmetic with rational numbers which has been available for years via the C library `GNU MP` aka [`GMP`] and in R via CRAN pkg [gmp][].
+In the vignette [Q Round][], we indeed use CRAN package `gmp` to perform such exact rounding using exact rational numbers, and compare these with the (double precision arithmetic) algorithms we have introduced here.
 
 However, even if R would _"come with GMP"_ in the future (which is conceivable for other reasons),
 we should note that this would still keep  `rx <- round(x, n)`  in R inaccurate in most cases, since `rx` is `numeric`, i.e., a double precision number, and almost all rational numbers are _not_ exactly representable as double.
 
+
+[Q Round]: https://CRAN.R-project.org/package=round/vignettes/rationalRound.html
 
 [R FAQ 7.31]: https://cran.r-project.org/doc/FAQ/R-FAQ.html#Why-doesn_0027t-R-think-these-numbers-are-equal_003f
 
@@ -271,6 +274,8 @@ we should note that this would still keep  `rx <- round(x, n)`  in R inaccurate 
 [`GMP`]: https://gmplib.org/
 
 [gmp]: https://CRAN.R-project.org/package=gmp
+
+[Rounding]: https://CRAN.R-project.org/package=round/vignettes/Rounding.html
 
 [^1]: using Winston Chang's semi-official mirror of R's official SVN repository at <https://svn.r-project.org/R/>
       (as `https://svn.r-project.org/R/trunk@77609` has not been enabled in its server)

@@ -73,7 +73,7 @@ roundVersions # "sprintf" "r0.C" "r1.C" "r1a.C" "r2.C"  "r3.C" "r3d.C"  "r3"
       corresponding C library function \code{sprintf()}; consequently may
       be platform dependent (though we have not yet seen differences from
       what we get by the most widely used GNU \file{glibc} library,
-      \url{https://gnu.org/software/libc}).  This version does \emph{not}
+      \url{https://www.gnu.org/software/libc/}).  This version does \emph{not}
       work with negative digits, returning \code{\link{NA}} with a
       \code{\link{warning}} there.}
     \item{\code{"r0.C"}:}{a (too much) simplified version of \R's
@@ -123,8 +123,10 @@ roundVersions # "sprintf" "r0.C" "r1.C" "r1a.C" "r2.C"  "r3.C" "r3d.C"  "r3"
   \code{roundAll()} applies \code{roundX()} for all \code{versions},
   returning a matrix if one of \code{x} or \code{digits} is not of length one.
 }
-%% \references{
-%% }
+\references{
+  Wikipedia, Rounding, notably "Round half to even":
+  \url{https://en.wikipedia.org/wiki/Rounding#Round_half_to_even}
+}
 \author{Martin Maechler (R Core for version "r1.C")}
 %% \note{
 %% }

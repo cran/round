@@ -9,8 +9,49 @@
 
 //--------------- from src/nmath/nmath.h -----------------------
 
-// unconditionally, must work:
-#define LDOUBLE long double
+
+/* Required by C99, but might be slow */
+#define HAVE_LONG_DOUBLE
+// Should replace by creating a  '../configure'  which checks
+// if (sizeof(long double) > sizeof(double))
+
+#ifdef HAVE_LONG_DOUBLE
+# define LDOUBLE long double
+#else
+# define LDOUBLE double
+#endif
+
+//  partly inspired by  Pkgs/DPQ/src/DPQpkg.h :
+#ifdef HAVE_LONG_DOUBLE
+# define EXP   expl
+# define EXPm1 expm1l
+# define FABS  fabsl
+# define LOG   logl
+# define LOG1p log1pl
+# define POW   powl
+# define CEIL  ceill
+# define FLOOR floorl
+# define FMOD  fmodl
+# define N_10  10.L
+# define N_2    2.L
+
+#else //-------------------- no long double
+
+# define EXP   exp
+# define EXPm1 expm1
+# define FABS  fabs
+# define LOG   log
+# define LOG1p log1p
+# define POW   pow
+# define CEIL  ceil
+# define FLOOR floor
+# define FMOD  fmod
+# define N_10  10.
+# define N_2    2.
+
+#endif
+//----------------------- LONG_DOUBLE -- LDOUBLE ----------------
+
 
 #define ML_POSINF	R_PosInf
 #define ML_NEGINF	R_NegInf

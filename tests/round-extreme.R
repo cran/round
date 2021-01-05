@@ -19,6 +19,7 @@ str(.M[grep("^sizeof", names(.M))]) ## also differentiate long-double..
 (b64 <- .M$sizeof.pointer == 8)
 (arch <- Sys.info()[["machine"]])
 (onWindows <- .Platform$OS.type == "windows")
+(hasLD <- unname(capabilities("long.double")))
 win32 <- onWindows && !b64
 
 if(!dev.interactive(orNone=TRUE)) pdf("round-extreme.pdf")

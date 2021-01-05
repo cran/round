@@ -249,21 +249,22 @@ double fround3(double x, double digits) {
     if(l10x + dig > DBL_DIG) // rounding to so many digits that no rounding is needed
 	return sgn * x;
 
-    // using long double : allows also "large" dig  where  10^dig  would overflow in double prec
-    long double
-	pow10 = powl(10.L, (long double) dig),
+    /* using LDOUBLE, i.e. long double *if* present (e.g. not on Mac M1):
+     * allows also "large" dig  where  10^dig  would overflow in double prec */
+    LDOUBLE
+	pow10 = POW(N_10, (LDOUBLE) dig),
 	x10 = x * pow10,
-	i10 = floorl(x10);
-    // Rboolean is_odd_i10 = (fmodl(i10, 2.L) == 1);
+	i10 = FLOOR(x10);
+    // Rboolean is_odd_i10 = (fmodl(i10, N_2) == 1);
     double
-	xd = (double) (    i10     / pow10),
-	xu = (double) (ceill (x10) / pow10);
-    long double
-	du = ((long double)xu) - (long double)x,
-	dd = ((long double)x ) - (long double)xd;
+	xd = (double) (    i10   / pow10),
+	xu = (double) (CEIL(x10) / pow10);
+    LDOUBLE
+	du = ((LDOUBLE)xu) - (LDOUBLE)x,
+	dd = ((LDOUBLE)x ) - (LDOUBLE)xd;
     //  D =  du - dd
     //  return sgn * ((D < 0 || (is_odd_i10 && D == 0)) ? xu : xd);
-    return sgn * ((du < dd || (fmodl(i10, 2.L) == 1 && du == dd)) ? xu : xd);
+    return sgn * ((du < dd || (FMOD(i10, N_2) == 1 && du == dd)) ? xu : xd);
 }
 
 // "r3d.C": Translation of "r3" from R to C -- *not* using 'long double'

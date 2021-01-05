@@ -15,30 +15,56 @@
 
 <title>Rounding to Decimal Digits in Binary</title>
 
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(title);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -47,9 +73,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -103,6 +129,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   }
 })();
 </script>
+
 
 
 
@@ -314,7 +341,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Rounding to Decimal Digits in Binary</h1>
 <h4 class="author">Martin Mächler</h4>
-<h4 class="date">July 4, 2020; rendered on 2020-07-05</h4>
+<h4 class="date">July 4, 2020; rendered on 2021-01-04</h4>
 
 
 
@@ -325,23 +352,23 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <!-- ~/R/MM/NUMERICS/round-even-odd.R  -->
 <p>Recently, there has been an official R bug report (on R’s bugzilla &lt;bugs.r-project.org&gt;), <a href="https://bugs.r-project.org/bugzilla/show_bug.cgi?id=17668"><code>PR#17668</code></a> with summary title <strong>Artificial numerical error in <code>round()</code> causing round to even to fail</strong>.</p>
 <p>Adam Wheeler started with a shorter version (just using digits = 1,2,..,8) of the following examples and his own remarks about correctness:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">op &lt;-<span class="st"> </span><span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">15</span>)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="co">##&#39; maybe add to package -- it&#39;s really useful here :</span></a>
-<a class="sourceLine" id="cb1-3" title="3">formatF &lt;-<span class="st"> </span><span class="cf">function</span>(x, ...) <span class="kw">noquote</span>(<span class="kw">format</span>(x, <span class="dt">scientific=</span><span class="ot">FALSE</span>, <span class="dt">drop0trailing=</span><span class="ot">TRUE</span>, ...))</a>
-<a class="sourceLine" id="cb1-4" title="4"><span class="kw">formatF</span>(<span class="kw">rbind</span>(           <span class="co"># R &lt;= 3.6.x :</span></a>
-<a class="sourceLine" id="cb1-5" title="5"><span class="kw">round</span>(<span class="fl">55.5</span>, <span class="dv">0</span>),          <span class="co"># 56 &lt;- correct</span></a>
-<a class="sourceLine" id="cb1-6" title="6"><span class="kw">round</span>(<span class="fl">55.55</span>, <span class="dv">1</span>),         <span class="co"># 55.5</span></a>
-<a class="sourceLine" id="cb1-7" title="7"><span class="kw">round</span>(<span class="fl">55.555</span>, <span class="dv">2</span>),        <span class="co"># 55.55</span></a>
-<a class="sourceLine" id="cb1-8" title="8"><span class="kw">round</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>),       <span class="co"># 55.556 &lt;- correct</span></a>
-<a class="sourceLine" id="cb1-9" title="9"><span class="kw">round</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>),      <span class="co"># 55.5555</span></a>
-<a class="sourceLine" id="cb1-10" title="10"><span class="kw">round</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>),     <span class="co"># 55.55555</span></a>
-<a class="sourceLine" id="cb1-11" title="11"><span class="kw">round</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>),    <span class="co"># 55.555555</span></a>
-<a class="sourceLine" id="cb1-12" title="12"><span class="kw">round</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>),   <span class="co"># 55.5555556 &lt;- correct</span></a>
-<a class="sourceLine" id="cb1-13" title="13"><span class="kw">round</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>),  <span class="co"># 55.55555555</span></a>
-<a class="sourceLine" id="cb1-14" title="14"><span class="kw">round</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>), <span class="co"># 55.555555555</span></a>
-<a class="sourceLine" id="cb1-15" title="15"><span class="kw">round</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>),<span class="co"># 55.5555555556 &lt;- correct</span></a>
-<a class="sourceLine" id="cb1-16" title="16"><span class="kw">round</span>(<span class="fl">55.555555555555</span>,<span class="dv">11</span>)<span class="co"># 55.55555555556 &lt;- correct</span></a>
-<a class="sourceLine" id="cb1-17" title="17">))</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>op &lt;-<span class="st"> </span><span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">15</span>)</span>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="co">##&#39; maybe add to package -- it&#39;s really useful here :</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>formatF &lt;-<span class="st"> </span><span class="cf">function</span>(x, ...) <span class="kw">noquote</span>(<span class="kw">format</span>(x, <span class="dt">scientific=</span><span class="ot">FALSE</span>, <span class="dt">drop0trailing=</span><span class="ot">TRUE</span>, ...))</span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="kw">formatF</span>(<span class="kw">rbind</span>(           <span class="co"># R &lt;= 3.6.x :</span></span>
+<span id="cb1-5"><a href="#cb1-5"></a><span class="kw">round</span>(<span class="fl">55.5</span>, <span class="dv">0</span>),          <span class="co"># 56 &lt;- correct</span></span>
+<span id="cb1-6"><a href="#cb1-6"></a><span class="kw">round</span>(<span class="fl">55.55</span>, <span class="dv">1</span>),         <span class="co"># 55.5</span></span>
+<span id="cb1-7"><a href="#cb1-7"></a><span class="kw">round</span>(<span class="fl">55.555</span>, <span class="dv">2</span>),        <span class="co"># 55.55</span></span>
+<span id="cb1-8"><a href="#cb1-8"></a><span class="kw">round</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>),       <span class="co"># 55.556 &lt;- correct</span></span>
+<span id="cb1-9"><a href="#cb1-9"></a><span class="kw">round</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>),      <span class="co"># 55.5555</span></span>
+<span id="cb1-10"><a href="#cb1-10"></a><span class="kw">round</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>),     <span class="co"># 55.55555</span></span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="kw">round</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>),    <span class="co"># 55.555555</span></span>
+<span id="cb1-12"><a href="#cb1-12"></a><span class="kw">round</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>),   <span class="co"># 55.5555556 &lt;- correct</span></span>
+<span id="cb1-13"><a href="#cb1-13"></a><span class="kw">round</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>),  <span class="co"># 55.55555555</span></span>
+<span id="cb1-14"><a href="#cb1-14"></a><span class="kw">round</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>), <span class="co"># 55.555555555</span></span>
+<span id="cb1-15"><a href="#cb1-15"></a><span class="kw">round</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>),<span class="co"># 55.5555555556 &lt;- correct</span></span>
+<span id="cb1-16"><a href="#cb1-16"></a><span class="kw">round</span>(<span class="fl">55.555555555555</span>,<span class="dv">11</span>)<span class="co"># 55.55555555556 &lt;- correct</span></span>
+<span id="cb1-17"><a href="#cb1-17"></a>))</span></code></pre></div>
 <pre><code>##       [,1]          
 ##  [1,] 56            
 ##  [2,] 55.5          
@@ -357,21 +384,21 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## [12,] 55.55555555556</code></pre>
 <p>(Note that we eventually will <em>not agree</em> on the above <code>correct</code> judgements, as the matter is more subtle than one might think at first)</p>
 <p>Whereas the exact result of the R code above currently depends on your version of R, our <code>round</code> package’s <code>roundX(x, dig, version = &quot;r1.C&quot;)</code> now provides these, using the same C source code as R 3.6.2 (Note we adopt the convention to use <code>&quot;r&lt;n&gt;.C&quot;</code>, ending in <code>.C</code> for round()ing versions where R calls package C code):</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">require</span>(round)</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">require</span>(round)</span></code></pre></div>
 <pre><code>## Loading required package: round</code></pre>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">formatF</span>(<span class="kw">rbind</span>(</a>
-<a class="sourceLine" id="cb5-2" title="2">  <span class="kw">roundX</span>(<span class="fl">55.5</span>, <span class="dv">0</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-3" title="3">  <span class="kw">roundX</span>(<span class="fl">55.55</span>, <span class="dv">1</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-4" title="4">  <span class="kw">roundX</span>(<span class="fl">55.555</span>, <span class="dv">2</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-5" title="5">  <span class="kw">roundX</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-6" title="6">  <span class="kw">roundX</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-7" title="7">  <span class="kw">roundX</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-8" title="8">  <span class="kw">roundX</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-9" title="9">  <span class="kw">roundX</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-10" title="10">  <span class="kw">roundX</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-11" title="11">  <span class="kw">roundX</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-12" title="12">  <span class="kw">roundX</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>, <span class="st">&quot;r1.C&quot;</span>),</a>
-<a class="sourceLine" id="cb5-13" title="13">  <span class="kw">roundX</span>(<span class="fl">55.555555555555</span>,<span class="dv">11</span>, <span class="st">&quot;r1.C&quot;</span>)))</a></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">formatF</span>(<span class="kw">rbind</span>(</span>
+<span id="cb5-2"><a href="#cb5-2"></a>  <span class="kw">roundX</span>(<span class="fl">55.5</span>, <span class="dv">0</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-3"><a href="#cb5-3"></a>  <span class="kw">roundX</span>(<span class="fl">55.55</span>, <span class="dv">1</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-4"><a href="#cb5-4"></a>  <span class="kw">roundX</span>(<span class="fl">55.555</span>, <span class="dv">2</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-5"><a href="#cb5-5"></a>  <span class="kw">roundX</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-6"><a href="#cb5-6"></a>  <span class="kw">roundX</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="kw">roundX</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-8"><a href="#cb5-8"></a>  <span class="kw">roundX</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="kw">roundX</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-10"><a href="#cb5-10"></a>  <span class="kw">roundX</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-11"><a href="#cb5-11"></a>  <span class="kw">roundX</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-12"><a href="#cb5-12"></a>  <span class="kw">roundX</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>, <span class="st">&quot;r1.C&quot;</span>),</span>
+<span id="cb5-13"><a href="#cb5-13"></a>  <span class="kw">roundX</span>(<span class="fl">55.555555555555</span>,<span class="dv">11</span>, <span class="st">&quot;r1.C&quot;</span>)))</span></code></pre></div>
 <pre><code>##       [,1]          
 ##  [1,] 56            
 ##  [2,] 55.5          
@@ -394,7 +421,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Well, rounding is supposedly quite simple and most of us learned a version of it in our first years of school when learning the (decimal) numbers, calculating and then simple decimal fractions. What most pupils learn (first) is round <em>up</em>, and round <em>down</em> (to an <em>integer</em>), and then end with the “best” <strong>rounding to nearest</strong> i.e., rounding to the nearest <em>integer</em>, notably using <em>“round half up”</em>, which mathematically is simply computing <span class="math inline">\(y = r_0(x) := \left\lfloor x + 0.5 \right\rfloor\)</span>, see e.g., <a href="https://en.wikipedia.org/wiki/Rounding">Wikipedia, Rounding</a>, or when taking <em>negative</em> numbers into account and ensuring <em>symmetry</em>, <span class="math inline">\(y = \mathrm{sgn}(x) \left\lfloor \left| x \right| + 0.5 \right\rfloor  = -\mathrm{sgn}(x) \left\lceil -\left| x \right| - 0.5 \right\rceil\)</span>, where the <em>“floor”</em> <span class="math inline">\(\lfloor x \rfloor\)</span> and <em>“ceiling”</em> <span class="math inline">\(\lceil x \rceil\)</span> operators are defined (customary in mathematics) as</p>
 <p><span class="math display">\[ \lfloor x \rfloor := \max_{n \in \mathbb{Z}} \{n \le x\}, \]</span> and <span class="math display">\[ \lceil  x \rceil  := \min_{n \in \mathbb{Z}} \{n \ge x\}. \]</span></p>
 <p>Whereas these (<em>rounding to nearest</em> and <em>“round half up”</em>) rules, also called <em>“commercial rounding”</em>, are widely taught and used, they lead to a small bias e.g., when numbers have all the same sign, and for this reason, for computing, <strong>round_half_to_even</strong> has been proposed and adopted as default rounding mode in the IEEE 754 floating-point standard and it corresponds to C and C++ math library function <code>nearbyint()</code>, and has been called <em>convergent rounding</em>, <em>statistician’s rounding</em>, <em>bankers’ rounding</em> (and more), see <a href="https://en.wikipedia.org/wiki/Rounding#Round_half_to_even">Wikipedia, Round half to even</a>. It is also what you get with R’s <code>round(x)</code>, as <code>round()</code>’s second argument has default 0:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">str</span>(round)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="kw">str</span>(round)</span></code></pre></div>
 <pre><code>## function (x, digits = 0)</code></pre>
 <p>So, for now, let’s set and use</p>
 <p><span class="math display">\[ round(x) := r(x) := nearbyint(x)
@@ -418,12 +445,12 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h2>Versions of round()ing - The Story</h2>
 <p>At first, <a href="https://bugs.r-project.org/bugzilla/show_bug.cgi?id=17668#c6">R bugzilla, comment #6</a>, I’ve committed a version of Adam’s proposal to R-devel (<a href="https://github.com/wch/r-source/commit/33d95f1">R svn r77609</a>, on 2019-12-21, <a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a>) but found that the simplification improved the above examples in that it always rounded to even, but it clearly broke cases that were working correctly in R 3.6.x. That version is available with our <code>roundX(*, version = &quot;r0.C&quot;)</code> (Version <code>0</code> as it is even simpler than version <code>1</code>).</p>
 <p>One CRAN package had relied on <code>round(x, digits = .Machine$integer.max)</code> to return integers unchanged, but</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">roundX</span>(<span class="kw">c</span>(<span class="op">-</span><span class="dv">2</span>,<span class="dv">2</span>), <span class="dt">digits =</span> .Machine<span class="op">$</span>integer.max, <span class="dt">version =</span> <span class="st">&quot;r0.C&quot;</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">roundX</span>(<span class="kw">c</span>(<span class="op">-</span><span class="dv">2</span>,<span class="dv">2</span>), <span class="dt">digits =</span> .Machine<span class="op">$</span>integer.max, <span class="dt">version =</span> <span class="st">&quot;r0.C&quot;</span>)</span></code></pre></div>
 <pre><code>## [1] -Inf  Inf</code></pre>
 <p>gave non-sense, and there were less extreme cases of relatively large <code>digits</code> which had stopped working with “r0”. See the two <code>roundX()</code> versions via simple wrapper <code>roundAll()</code>:</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">i &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)<span class="op">*</span><span class="st"> </span><span class="dv">2</span><span class="op">^</span>(<span class="dv">33</span><span class="op">:</span><span class="dv">16</span>)</a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="kw">stopifnot</span>(i <span class="op">==</span><span class="st"> </span><span class="kw">floor</span>(i)) <span class="co"># are integer valued</span></a>
-<a class="sourceLine" id="cb11-3" title="3"><span class="kw">roundAll</span>(i, <span class="dt">digits =</span> <span class="dv">300</span>, <span class="dt">versions =</span> <span class="kw">c</span>(<span class="st">&quot;r0.C&quot;</span>, <span class="st">&quot;r1.C&quot;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>i &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="op">-</span><span class="dv">1</span>,<span class="dv">1</span>)<span class="op">*</span><span class="st"> </span><span class="dv">2</span><span class="op">^</span>(<span class="dv">33</span><span class="op">:</span><span class="dv">16</span>)</span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="kw">stopifnot</span>(i <span class="op">==</span><span class="st"> </span><span class="kw">floor</span>(i)) <span class="co"># are integer valued</span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="kw">roundAll</span>(i, <span class="dt">digits =</span> <span class="dv">300</span>, <span class="dt">versions =</span> <span class="kw">c</span>(<span class="st">&quot;r0.C&quot;</span>, <span class="st">&quot;r1.C&quot;</span>))</span></code></pre></div>
 <pre><code>##             r0.C        r1.C
 ##  [1,]       -Inf -8589934592
 ##  [2,]        Inf  4294967296
@@ -444,9 +471,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## [17,]    -131072     -131072
 ## [18,]      65536       65536</code></pre>
 <p>Looking at these, I also found that internally, R’s <code>round()</code> had effectively worked as if <code>digits &lt;- pmin(308, digits)</code>, i.e., truncated digits larger than 308. This is clearly not good enough for very small numbers (in absolute value),</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">e &lt;-<span class="st"> </span><span class="fl">5.555555555555555555555e-308</span></a>
-<a class="sourceLine" id="cb13-2" title="2">d &lt;-<span class="st"> </span><span class="dv">312</span><span class="op">:</span><span class="dv">305</span> ; <span class="kw">names</span>(d) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;d=&quot;</span>, d)</a>
-<a class="sourceLine" id="cb13-3" title="3"><span class="kw">roundAll</span>(e, d, <span class="dt">versions =</span> <span class="kw">c</span>(<span class="st">&quot;r0.C&quot;</span>, <span class="st">&quot;r1.C&quot;</span>, <span class="st">&quot;r2.C&quot;</span>))</a></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>e &lt;-<span class="st"> </span><span class="fl">5.555555555555555555555e-308</span></span>
+<span id="cb13-2"><a href="#cb13-2"></a>d &lt;-<span class="st"> </span><span class="dv">312</span><span class="op">:</span><span class="dv">305</span> ; <span class="kw">names</span>(d) &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;d=&quot;</span>, d)</span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">roundAll</span>(e, d, <span class="dt">versions =</span> <span class="kw">c</span>(<span class="st">&quot;r0.C&quot;</span>, <span class="st">&quot;r1.C&quot;</span>, <span class="st">&quot;r2.C&quot;</span>))</span></code></pre></div>
 <pre><code>##         r0.C   r1.C        r2.C
 ## d=312 6e-308 6e-308 5.5556e-308
 ## d=311 6e-308 6e-308 5.5560e-308
@@ -458,31 +485,31 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## d=305  0e+00  0e+00  0.0000e+00</code></pre>
 <p>As I was embarrassed to have blundered, I’ve worked and committed what now corresponds to <code>roundX(*, version = &quot;r2.C&quot;)</code> to R-devel (<a href="https://github.com/wch/r-source/commit/7a55bbeb">R svn r77618</a>, on 2019-12-24, 16:11).</p>
 <p>Also, Jeroen Ooms, maintainer of CRAN package <code>jsonlite</code>, contacted the CRAN team and me about the change in R-devel which broke one regression test of that package, and on Dec 27, he noticed that R 3.6.2’s version of <code>round()</code> was seemingly compatible <a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a> with the (C library dependent) versions of <code>sprintf()</code> and also with R’s <code>format()</code> whereas the R-devel versions where not, for his example: (Note: <code>format(x, digits = d)</code> uses <strong>significant</strong> digits <code>d</code>, not digits after the decimal point as <code>round()</code> does!)</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">x &lt;-<span class="st"> </span><span class="fl">9.18665</span></a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="kw">format</span>(x, <span class="dt">digits =</span> <span class="dv">5</span>) <span class="co">#  &quot;9.1867&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>x &lt;-<span class="st"> </span><span class="fl">9.18665</span></span>
+<span id="cb15-2"><a href="#cb15-2"></a><span class="kw">format</span>(x, <span class="dt">digits =</span> <span class="dv">5</span>) <span class="co">#  &quot;9.1867&quot;</span></span></code></pre></div>
 <pre><code>## [1] &quot;9.1867&quot;</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">sprintf</span>(<span class="st">&quot;%.4f&quot;</span>, x)    <span class="co">#  &quot;9.1867&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">sprintf</span>(<span class="st">&quot;%.4f&quot;</span>, x)    <span class="co">#  &quot;9.1867&quot;</span></span></code></pre></div>
 <pre><code>## [1] &quot;9.1867&quot;</code></pre>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co">## but -- showing now</span></a>
-<a class="sourceLine" id="cb19-2" title="2"><span class="kw">roundAll</span>(x, <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co">## but -- showing now</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="kw">roundAll</span>(x, <span class="dv">4</span>)</span></code></pre></div>
 <pre><code>## sprintf    r0.C    r1.C   r1a.C    r2.C   r2a.C    r3.C   r3d.C      r3 
 ##  9.1867  9.1866  9.1867  9.1867  9.1866  9.1866  9.1866  9.1866  9.1866</code></pre>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co">## but note that</span></a>
-<a class="sourceLine" id="cb21-2" title="2"><span class="kw">print</span>(x, <span class="dt">digits=</span><span class="dv">18</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co">## but note that</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="kw">print</span>(x, <span class="dt">digits=</span><span class="dv">18</span>)</span></code></pre></div>
 <pre><code>## [1] 9.1866500000000002</code></pre>
 <p>which (typically) shows <code>9.1866500000000002</code>, i.e., a number closer to 9.1867 than to 9.1866, and so really should be rounded up, not down. However, that is partly wrong: Whereas it is true that it’s closer to 9.1867 than to 9.1866, one must be aware that these two decimal numbers are <strong>neither</strong> exactly representable in binary double precision, and a further careful look shows actually the double precision version of these rounded numbers do have the exact same distance to <code>x</code> and that the main principle <em>round to nearest</em> here gives a tie:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">print</span>(<span class="kw">rbind</span>(<span class="fl">9.1866</span>, <span class="fl">9.18665</span>, <span class="fl">9.1867</span>), <span class="dt">digits=</span><span class="dv">18</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">print</span>(<span class="kw">rbind</span>(<span class="fl">9.1866</span>, <span class="fl">9.18665</span>, <span class="fl">9.1867</span>), <span class="dt">digits=</span><span class="dv">18</span>)</span></code></pre></div>
 <pre><code>##                     [,1]
 ## [1,] 9.18660000000000032
 ## [2,] 9.18665000000000020
 ## [3,] 9.18670000000000009</code></pre>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">(dx &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">9.1866</span>, <span class="fl">9.1867</span>) <span class="op">-</span><span class="st"> </span>x) <span class="co"># [1] -4.99999999998835e-05  4.99999999998835e-05</span></a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>(dx &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="fl">9.1866</span>, <span class="fl">9.1867</span>) <span class="op">-</span><span class="st"> </span>x) <span class="co"># [1] -4.99999999998835e-05  4.99999999998835e-05</span></span></code></pre></div>
 <pre><code>## [1] -4.99999999998835e-05  4.99999999998835e-05</code></pre>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="kw">diff</span>(<span class="kw">abs</span>(dx)) <span class="co"># is zero !</span></a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="kw">diff</span>(<span class="kw">abs</span>(dx)) <span class="co"># is zero !</span></span></code></pre></div>
 <pre><code>## [1] 0</code></pre>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">options</span>(<span class="dt">digits=</span><span class="dv">7</span>) <span class="co"># revert to (typical) default</span></a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="kw">options</span>(<span class="dt">digits=</span><span class="dv">7</span>) <span class="co"># revert to (typical) default</span></span></code></pre></div>
 <p>and because of the tie, the <em>round to even</em> rule must apply which means rounding <em>down</em> to 9.1866, and so both libc’s printf and hence R’s <code>sprintf()</code> are as wrong as R 3.6.x has been, and indeed all our <code>roundX()</code> versions apart from <code>&quot;sprintf&quot;</code> and the ’&quot;r1*&quot;’ (previous R) ones, do round down:</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1"><span class="kw">roundAll</span>(x, <span class="dv">4</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="kw">roundAll</span>(x, <span class="dv">4</span>)</span></code></pre></div>
 <pre><code>## sprintf    r0.C    r1.C   r1a.C    r2.C   r2a.C    r3.C   r3d.C      r3 
 ##  9.1867  9.1866  9.1867  9.1867  9.1866  9.1866  9.1866  9.1866  9.1866</code></pre>
 <p>Finally, I think we’ve seen the light and on one hand recalled what we have known for long (but most R users will not be aware of at all)</p>
@@ -498,7 +525,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </ol>
 </blockquote>
 <p>and hence, a <em>“correct”</em> implementation must really <em>measure, not guess</em> which of the two possible decimals is closer to <code>x</code>. This lead to our R level algorithm <code>round_r3()</code> which is the workhorse used by <code>roundX(x,d, version = &quot;r3&quot;)</code> :</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb32-1" title="1">round_r3</a></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>round_r3</span></code></pre></div>
 <pre><code>## function(x, d, info=FALSE, check=TRUE) {
 ##     if(check)
 ##         stopifnot(!anyNA(d), length(d) == 1L) # length(x) is arbitrary
@@ -524,24 +551,24 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##     r[!i] &lt;- xd[!i]
 ##     if(info) list(r=r, D=D, e=e) else r
 ## }
-## &lt;bytecode: 0x85d17e0&gt;
+## &lt;bytecode: 0xab5a038&gt;
 ## &lt;environment: namespace:round&gt;</code></pre>
 <p>and its two C level versions <code>&quot;r3.C&quot;</code> (using <code>long double</code>) and <code>&quot;r3d.C&quot;</code> (<em>“d”</em> for <em>“double”</em>, as it uses double precision only).</p>
 <p>For R 4.0.0, this (equivalent of <code>&quot;r3d.C&quot;)</code>, has been used for <code>round(x, digits)</code> now, as does not use <code>long double</code> and is very close to the R level implementation <code>&quot;r3&quot;</code> (i.e., <code>round_r3()</code>) makes it potentially less platform dependent and easier to explain and document.</p>
 <p>Lastly, note that the original set of examples is then treated differently from all previous proposals:</p>
-<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb34-1" title="1">op &lt;-<span class="st"> </span><span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">15</span>, <span class="dt">width =</span> <span class="dv">2</span><span class="op">*</span><span class="dv">3</span><span class="op">*</span><span class="dv">23</span>)</a>
-<a class="sourceLine" id="cb34-2" title="2"><span class="kw">formatF</span>(<span class="kw">rbind</span>(</a>
-<a class="sourceLine" id="cb34-3" title="3"> <span class="dt">d0 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5</span>, <span class="dv">0</span>)</a>
-<a class="sourceLine" id="cb34-4" title="4">,<span class="dt">d1 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55</span>, <span class="dv">1</span>)</a>
-<a class="sourceLine" id="cb34-5" title="5">,<span class="dt">d2 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555</span>, <span class="dv">2</span>)</a>
-<a class="sourceLine" id="cb34-6" title="6">,<span class="dt">d3 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>)</a>
-<a class="sourceLine" id="cb34-7" title="7">,<span class="dt">d4 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>)</a>
-<a class="sourceLine" id="cb34-8" title="8">,<span class="dt">d5 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>)</a>
-<a class="sourceLine" id="cb34-9" title="9">,<span class="dt">d6 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>)</a>
-<a class="sourceLine" id="cb34-10" title="10">,<span class="dt">d7 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>)</a>
-<a class="sourceLine" id="cb34-11" title="11">,<span class="dt">d8 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>)</a>
-<a class="sourceLine" id="cb34-12" title="12">,<span class="dt">d9 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>)</a>
-<a class="sourceLine" id="cb34-13" title="13">,<span class="dt">d10=</span> <span class="kw">roundAll</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>))); <span class="kw">options</span>(op)</a></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>op &lt;-<span class="st"> </span><span class="kw">options</span>(<span class="dt">digits =</span> <span class="dv">15</span>, <span class="dt">width =</span> <span class="dv">2</span><span class="op">*</span><span class="dv">3</span><span class="op">*</span><span class="dv">23</span>)</span>
+<span id="cb34-2"><a href="#cb34-2"></a><span class="kw">formatF</span>(<span class="kw">rbind</span>(</span>
+<span id="cb34-3"><a href="#cb34-3"></a> <span class="dt">d0 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5</span>, <span class="dv">0</span>)</span>
+<span id="cb34-4"><a href="#cb34-4"></a>,<span class="dt">d1 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55</span>, <span class="dv">1</span>)</span>
+<span id="cb34-5"><a href="#cb34-5"></a>,<span class="dt">d2 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555</span>, <span class="dv">2</span>)</span>
+<span id="cb34-6"><a href="#cb34-6"></a>,<span class="dt">d3 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555</span>, <span class="dv">3</span>)</span>
+<span id="cb34-7"><a href="#cb34-7"></a>,<span class="dt">d4 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55555</span>, <span class="dv">4</span>)</span>
+<span id="cb34-8"><a href="#cb34-8"></a>,<span class="dt">d5 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555555</span>, <span class="dv">5</span>)</span>
+<span id="cb34-9"><a href="#cb34-9"></a>,<span class="dt">d6 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555555</span>, <span class="dv">6</span>)</span>
+<span id="cb34-10"><a href="#cb34-10"></a>,<span class="dt">d7 =</span> <span class="kw">roundAll</span>(<span class="fl">55.55555555</span>, <span class="dv">7</span>)</span>
+<span id="cb34-11"><a href="#cb34-11"></a>,<span class="dt">d8 =</span> <span class="kw">roundAll</span>(<span class="fl">55.555555555</span>, <span class="dv">8</span>)</span>
+<span id="cb34-12"><a href="#cb34-12"></a>,<span class="dt">d9 =</span> <span class="kw">roundAll</span>(<span class="fl">55.5555555555</span>, <span class="dv">9</span>)</span>
+<span id="cb34-13"><a href="#cb34-13"></a>,<span class="dt">d10=</span> <span class="kw">roundAll</span>(<span class="fl">55.55555555555</span>,<span class="dv">10</span>))); <span class="kw">options</span>(op)</span></code></pre></div>
 <pre><code>##     sprintf       r0.C          r1.C          r1a.C         r2.C          r2a.C         r3.C          r3d.C         r3           
 ## d0  56            56            56            56            56            56            56            56            56           
 ## d1  55.5          55.6          55.5          55.5          55.6          55.6          55.5          55.5          55.5         
@@ -562,37 +589,37 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>all double precision numbers are rationals mathematically, i.e., <span class="math inline">\(\in \mathbb{Q}\)</span>.</li>
 <li><code>round(x, n)</code> as a mathematical function is well defined unambigously on the rationals. In our notation above, simply <span class="math inline">\(round(x, n) := r(x \cdot 10^n) / 10^n\)</span>, where <span class="math inline">\(r(x) := round(x) = nearbyint(x)\)</span>, using <em>round to even</em> if desired.</li>
 </ol>
-<p>These two define <em>exact rounding</em> and he would want R to use that. Note for that, R would have to use exact arithmetic with rational numbers which has been available for years via the C library <code>GNU MP</code> aka <a href="https://gmplib.org/"><code>GMP</code></a> and in R via CRAN pkg <a href="https://CRAN.R-project.org/package=gmp">gmp</a>.</p>
+<p>These two define <em>exact rounding</em> and he would want R to use that. Note for that, R would have to use exact arithmetic with rational numbers which has been available for years via the C library <code>GNU MP</code> aka <a href="https://gmplib.org/"><code>GMP</code></a> and in R via CRAN pkg <a href="https://CRAN.R-project.org/package=gmp">gmp</a>. In the vignette <a href="https://CRAN.R-project.org/package=round/vignettes/rationalRound.html">Q Round</a>, we indeed use CRAN package <code>gmp</code> to perform such exact rounding using exact rational numbers, and compare these with the (double precision arithmetic) algorithms we have introduced here.</p>
 <p>However, even if R would <em>“come with GMP”</em> in the future (which is conceivable for other reasons), we should note that this would still keep <code>rx &lt;- round(x, n)</code> in R inaccurate in most cases, since <code>rx</code> is <code>numeric</code>, i.e., a double precision number, and almost all rational numbers are <em>not</em> exactly representable as double.</p>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
 <p>(Note half a dozen non-standard packages present only as dependences of <code>rmarkdown</code> we use for rendering this vignette)</p>
-<pre><code>## R version 4.0.2 Patched (2020-07-02 r78777)
+<pre><code>## R version 4.0.3 Patched (2021-01-04 r79786)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Fedora 30 (Thirty)
+## Running under: Fedora 32 (Thirty Two)
 ## 
 ## Matrix products: default
-## BLAS:   /scratch/users/maechler/R/D/r-patched/F30-64-inst/lib/libRblas.so
-## LAPACK: /scratch/users/maechler/R/D/r-patched/F30-64-inst/lib/libRlapack.so
+## BLAS:   /u/maechler/R/D/r-patched/F32-64-inst/lib/libRblas.so
+## LAPACK: /u/maechler/R/D/r-patched/F32-64-inst/lib/libRlapack.so
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] round_0.12-2
+## [1] round_0.20-0
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] compiler_4.0.2  magrittr_1.5    htmltools_0.5.0 tools_4.0.2    
-##  [5] yaml_2.2.1      stringi_1.4.6   rmarkdown_2.3   knitr_1.29     
-##  [9] stringr_1.4.0   digest_0.6.25   xfun_0.15       rlang_0.4.6    
+##  [1] compiler_4.0.3  magrittr_2.0.1  htmltools_0.5.0 tools_4.0.3    
+##  [5] yaml_2.2.1      stringi_1.5.3   rmarkdown_2.6   knitr_1.30     
+##  [9] stringr_1.4.0   digest_0.6.27   xfun_0.19       rlang_0.4.10   
 ## [13] evaluate_0.14</code></pre>
 </div>
 </div>
 <div class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>using Winston Chang’s semi-official mirror of R’s official SVN repository at <a href="https://svn.r-project.org/R/" class="uri">https://svn.r-project.org/R/</a> (as <code>https://svn.r-project.org/R/trunk@77609</code> has not been enabled in its server)<a href="#fnref1" class="footnote-back">↩</a></p></li>
-<li id="fn2"><p>do note that <code>sprintf()</code> and R 3.6.x’s version of <code>round()</code> are <em>not</em> at all equivalent, even if they are for Jeroen’s example<a href="#fnref2" class="footnote-back">↩</a></p></li>
+<li id="fn1"><p>using Winston Chang’s semi-official mirror of R’s official SVN repository at <a href="https://svn.r-project.org/R/" class="uri">https://svn.r-project.org/R/</a> (as <code>https://svn.r-project.org/R/trunk@77609</code> has not been enabled in its server)<a href="#fnref1" class="footnote-back">↩︎</a></p></li>
+<li id="fn2"><p>do note that <code>sprintf()</code> and R 3.6.x’s version of <code>round()</code> are <em>not</em> at all equivalent, even if they are for Jeroen’s example<a href="#fnref2" class="footnote-back">↩︎</a></p></li>
 </ol>
 </div>
 

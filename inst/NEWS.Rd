@@ -4,6 +4,22 @@
 \title{\pkg{round} R package  News}
 \encoding{UTF-8}
 
+\section{Changes in version 0.20-0 [2021-01-04]}{
+  \subsection{NEW FEATURES}{
+    \itemize{
+      \item New vignette \file{rationalRound}, comparing CRAN package
+      \CRANpkg{gmp}'s based exact rational rounding with our package's
+      algorithms.
+    }
+  }
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item adapt \file{tests/} to failing (NaN) for some \code{"r3.C"}
+      cases, when there are no long doubles (as on Mac M1).
+    }
+  }
+}
+
 \section{Changes in version 0.12-2 [2020-07-04]}{
   \subsection{NEW FEATURES}{
     \itemize{
@@ -30,11 +46,6 @@
       16 times for \code{roundX(.Machine$double.xmax, -(295:310), "r3d.C")}.
     }
   }
-  %% \subsection{BUG FIXES}{
-  %%   \itemize{
-  %%     \item
-  %%   }
-  %% }
 }
 
 \section{Changes in version 0.12-0 [2020-01-13]}{

@@ -20,6 +20,9 @@ str(.M[grep("^sizeof", names(.M))]) ## also differentiate long-double..
 (arch <- Sys.info()[["machine"]])
 (onWindows <- .Platform$OS.type == "windows")
 (hasLD <- unname(capabilities("long.double")))
+(validLD <- hasLD &&
+     (.M$longdouble.digits > .M$double.digits) &&
+     (.M$longdouble.min.exp <= 8L * .M$double.min.exp))
 win32 <- onWindows && !b64
 doExtras <- round:::doExtras()
 
@@ -43,24 +46,26 @@ dig <- 305:340
 okD <- dig <= 323L
 (typV <- setdiff(roundVersions, c("r0.C", "r1.C")))
 (no_printf <- setdiff(roundVersions, "sprintf"))
-(no_LDOUBLE <- setdiff(roundVersions, "r3.C"))
+(no_LDOUBLE <- setdiff(roundVersions, "r3.C")) # BDR's valgrind-ed version has NaN here (for 7e-304)
 epsC <- .Machine$double.eps
 for(x in xx) {
     cat("\n", x, ":\n")
     dx <- x - roundAll(x, dig)
-    print(cbind(dig = dig, "d+l10" = dig + .30103*(ilogb(x) + .5), abs(dx)/x)[okD,], digits = 4)
+    print(cbind(dig = dig, "d+l10" = dig + .30103*(ilogb(x) + .5),
+                "|dx|/x" = abs(dx)/x)[okD,], digits = 4)
     ## FIXME: can do much more rational tests:  err  |dx| =~ 10^-dd (if dd > 0)
-    if(hasLD) {
-        stopifnot(is.finite(dx))
-        if(x == 7e-304)
+    if(validLD) {
+        if(x == 7e-304) { ## denormalized etc
             stopifnot(abs(dx) < 10* x * epsC)
+        }
+        else stopifnot(is.finite(dx))
         stopifnot(dx[!okD, typV] == 0)
     } else { # no 'long double' -- Lnx 64b:  interestingly "sprintf" is quite a bit affected
         stopifnot(is.finite(dx[,no_LDOUBLE]))
-        cat("No  long_double  capability\n")
+        cat("No (proper) long_double capability\n")
         ## FIXME .. apart from "sprintf" things look good ... "yeah.."
         ## -----   TODO derive from above print( .... abs(dx)/x)
-        if(FALSE) stopifnot(dx[!okD, no_printf] < 10 * x  * epsC)
+        if(FALSE) stopifnot(abs(dx/x)[!okD, no_printf] < 10 * epsC)
     }
 }
 

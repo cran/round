@@ -263,13 +263,13 @@ we should note that this would still keep  `rx <- round(x, n)`  in R inaccurate 
 
 [seven31]: https://github.com/ThinkR-open/seven31 "seven31"
 
-[`PR#17668`]: https://bugs.r-project.org/bugzilla/show_bug.cgi?id=17668
+[`PR#17668`]: https://bugs.r-project.org/show_bug.cgi?id=17668
 
 [Wikipedia, Rounding]: https://en.wikipedia.org/wiki/Rounding
 
 [Wikipedia, Round half to even]: https://en.wikipedia.org/wiki/Rounding#Round_half_to_even
 
-[R bugzilla, comment #6]: https://bugs.r-project.org/bugzilla/show_bug.cgi?id=17668#c6
+[R bugzilla, comment #6]: https://bugs.r-project.org/show_bug.cgi?id=17668#c6
 
 [`GMP`]: https://gmplib.org/
 

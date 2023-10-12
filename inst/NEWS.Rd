@@ -4,6 +4,17 @@
 \title{\pkg{round} R package  News}
 \encoding{UTF-8}
 
+\section{Changes in version 0.21-0 [2023-10-10]}{
+  \subsection{BUG FIXES}{
+    \itemize{
+      \item \file{../tests/round-tst.R}: Better at detecting non-valid
+      long-double; needed e.g., for BDR's valgrind instrumented R checks.
+
+      \item R bugzilla URL updates.
+    }
+  }
+}
+
 \section{Changes in version 0.20-0 [2021-01-04]}{
   \subsection{NEW FEATURES}{
     \itemize{

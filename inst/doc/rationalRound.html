@@ -15,38 +15,44 @@
 
 <title>Exact Decimal Rounding via Rationals</title>
 
-<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
-// v0.0.1
-// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
-
-document.addEventListener('DOMContentLoaded', function() {
-  const codeList = document.getElementsByClassName("sourceCode");
-  for (var i = 0; i < codeList.length; i++) {
-    var linkList = codeList[i].getElementsByTagName('a');
-    for (var j = 0; j < linkList.length; j++) {
-      if (linkList[j].innerHTML === "") {
-        linkList[j].setAttribute('aria-hidden', 'true');
-      }
-    }
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
   }
 });
 </script>
 
 <style type="text/css">
-  code{white-space: pre-wrap;}
-  span.smallcaps{font-variant: small-caps;}
-  span.underline{text-decoration: underline;}
-  div.column{display: inline-block; vertical-align: top; width: 50%;}
-  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
-  ul.task-list{list-style: none;}
-    </style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
 
 
-<style type="text/css">code{white-space: pre;}</style>
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
 <style type="text/css" data-origin="pandoc">
 pre > code.sourceCode { white-space: pre; position: relative; }
 pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
@@ -58,55 +64,54 @@ pre > code.sourceCode { white-space: pre-wrap; }
 pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
-  { counter-reset: source-line 0; }
+{ counter-reset: source-line 0; }
 pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
+{ position: relative; left: -4em; counter-increment: source-line; }
 pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
 div.sourceCode
-  {   }
+{ }
 @media screen {
 pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
-
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
 </style>
 <script>
 // apply pandoc div.sourceCode style to pre.sourceCode instead
@@ -115,13 +120,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -341,51 +353,70 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Exact Decimal Rounding via Rationals</h1>
 <h4 class="author">Martin Mächler</h4>
-<h4 class="date">July 23, 2020; rendered on 2021-01-04</h4>
+<h4 class="date">July 23, 2020; rendered on 2023-10-11</h4>
 
 
 
 <div id="intro" class="section level2">
 <h2>Intro</h2>
-<p>As shown in the “basic” vignette <a href="https://CRAN.R-project.org/package=round/vignettes/Rounding.html">Rounding</a> of package <code>round</code>, rounding to decimal digits of double precision numbers is not trivial, mostly because most rational numbers and even most rational numbers with a finite (small) number of decimal digits are <em>not</em> exactly representable as regular (double precision) numbers in R:</p>
-<p>In communication with Steven Dirkse (@ GAMS), started on the R-devel mailing lists, then continued in private, we came to concluding his own proposal for <em>correct rounding</em> as the following, using the definitions (as in <a href="https://CRAN.R-project.org/package=round/vignettes/Rounding.html">Rounding</a>),</p>
+<p>As shown in the “basic” vignette <a href="https://CRAN.R-project.org/package=round/vignettes/Rounding.html">Rounding</a>
+of package <code>round</code>, rounding to decimal digits of double
+precision numbers is not trivial, mostly because most rational numbers
+and even most rational numbers with a finite (small) number of decimal
+digits are <em>not</em> exactly representable as regular (double
+precision) numbers in R:</p>
+<p>In communication with Steven Dirkse (@ GAMS), started on the R-devel
+mailing lists, then continued in private, we came to concluding his own
+proposal for <em>correct rounding</em> as the following, using the
+definitions (as in <a href="https://CRAN.R-project.org/package=round/vignettes/Rounding.html">Rounding</a>),</p>
 <p>Rounding to the nearest integer, <span class="math display">\[
 \mathrm{round}(x) := r_0(x) := \mathrm{nearbyint}(x)
 \]</span></p>
 <p>and its generalization, rounding to <span class="math inline">\(d\)</span> digits, <span class="math display">\[
- \mathrm{round}(x, d) := r_0(x \cdot 10^d) / 10^d
-\]</span> for all integer <span class="math inline">\(d \in \mathbb{Z}\)</span> (i.e., including negative <code>digits</code> <span class="math inline">\(d\)</span>).</p>
+\mathrm{round}(x, d) := r_0(x \cdot 10^d) / 10^d
+\]</span> for all integer <span class="math inline">\(d \in
+\mathbb{Z}\)</span> (i.e., including negative <code>digits</code> <span class="math inline">\(d\)</span>).</p>
 <ol style="list-style-type: decimal">
-<li>all double precision numbers are rational mathematically, i.e., <span class="math inline">\(\in \mathbb{Q}\)</span>.</li>
-<li><code>round(x, n)</code> as a mathematical function is well defined unambigously on the rationals, i.e., for all <span class="math inline">\(x \in \mathbb{Q}\)</span> with the definitions above.</li>
+<li>all double precision numbers are rational mathematically, i.e.,
+<span class="math inline">\(\in \mathbb{Q}\)</span>.</li>
+<li><code>round(x, n)</code> as a mathematical function is well defined
+unambigously on the rationals, i.e., for all <span class="math inline">\(x \in \mathbb{Q}\)</span> with the definitions
+above.</li>
 </ol>
-<p>These two define <em>exact rounding</em> and he would want R to use that.</p>
-<p>In the following, I will use that, via exact arithmetic with rational numbers via CRAN pkg <a href="https://CRAN.R-project.org/package=gmp">gmp</a> (which is based on the free C library <code>GNU MP</code> aka <a href="https://gmplib.org/"><code>GMP</code></a>.</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>d1 &lt;-<span class="st"> </span><span class="kw">c</span>(.<span class="dv">1</span>, <span class="fl">.2</span>, <span class="fl">.3</span>, <span class="fl">.4</span>, <span class="fl">.5</span>, <span class="fl">.6</span>, <span class="fl">.7</span>, <span class="fl">.8</span>, <span class="fl">.9</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>fivers &lt;-<span class="st"> </span><span class="kw">list</span>(</span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="dt">d1 =</span>    <span class="fl">.5</span></span>
-<span id="cb1-4"><a href="#cb1-4"></a>  , <span class="dt">d2 =</span> <span class="kw">c</span>( <span class="fl">.05</span>, <span class="fl">.15</span>,  <span class="fl">.25</span>,  <span class="fl">.35</span>,  <span class="fl">.45</span>,  <span class="fl">.55</span>,  <span class="fl">.65</span>,  <span class="fl">.75</span>,  <span class="fl">.85</span>,  <span class="fl">.95</span>)</span>
-<span id="cb1-5"><a href="#cb1-5"></a>  , <span class="dt">d3 =</span> <span class="kw">c</span>(.<span class="dv">005</span>, <span class="fl">.015</span>, <span class="fl">.025</span>, <span class="fl">.035</span>, <span class="fl">.045</span>, <span class="fl">.055</span>, <span class="fl">.065</span>, <span class="fl">.075</span>, <span class="fl">.085</span>, <span class="fl">.095</span>,</span>
-<span id="cb1-6"><a href="#cb1-6"></a>           <span class="fl">.105</span>, <span class="fl">.115</span>, <span class="fl">.125</span>, <span class="fl">.135</span>, <span class="fl">.145</span>, <span class="fl">.155</span>, <span class="fl">.165</span>, <span class="fl">.175</span>, <span class="fl">.185</span>, <span class="fl">.195</span>,</span>
-<span id="cb1-7"><a href="#cb1-7"></a>           <span class="fl">.205</span>, <span class="fl">.215</span>, <span class="fl">.225</span>, <span class="fl">.235</span>, <span class="fl">.245</span>, <span class="fl">.255</span>, <span class="fl">.265</span>, <span class="fl">.275</span>, <span class="fl">.285</span>, <span class="fl">.295</span>,</span>
-<span id="cb1-8"><a href="#cb1-8"></a>           <span class="fl">.305</span>, <span class="fl">.315</span>, <span class="fl">.325</span>, <span class="fl">.335</span>, <span class="fl">.345</span>, <span class="fl">.355</span>, <span class="fl">.365</span>, <span class="fl">.375</span>, <span class="fl">.385</span>, <span class="fl">.395</span>,</span>
-<span id="cb1-9"><a href="#cb1-9"></a>           <span class="fl">.405</span>, <span class="fl">.415</span>, <span class="fl">.425</span>, <span class="fl">.435</span>, <span class="fl">.445</span>, <span class="fl">.455</span>, <span class="fl">.465</span>, <span class="fl">.475</span>, <span class="fl">.485</span>, <span class="fl">.495</span>,</span>
-<span id="cb1-10"><a href="#cb1-10"></a>           <span class="fl">.505</span>, <span class="fl">.515</span>, <span class="fl">.525</span>, <span class="fl">.535</span>, <span class="fl">.545</span>, <span class="fl">.555</span>, <span class="fl">.565</span>, <span class="fl">.575</span>, <span class="fl">.585</span>, <span class="fl">.595</span>,</span>
-<span id="cb1-11"><a href="#cb1-11"></a>           <span class="fl">.605</span>, <span class="fl">.615</span>, <span class="fl">.625</span>, <span class="fl">.635</span>, <span class="fl">.645</span>, <span class="fl">.655</span>, <span class="fl">.665</span>, <span class="fl">.675</span>, <span class="fl">.685</span>, <span class="fl">.695</span>,</span>
-<span id="cb1-12"><a href="#cb1-12"></a>           <span class="fl">.705</span>, <span class="fl">.715</span>, <span class="fl">.725</span>, <span class="fl">.735</span>, <span class="fl">.745</span>, <span class="fl">.755</span>, <span class="fl">.765</span>, <span class="fl">.775</span>, <span class="fl">.785</span>, <span class="fl">.795</span>,</span>
-<span id="cb1-13"><a href="#cb1-13"></a>           <span class="fl">.805</span>, <span class="fl">.815</span>, <span class="fl">.825</span>, <span class="fl">.835</span>, <span class="fl">.845</span>, <span class="fl">.855</span>, <span class="fl">.865</span>, <span class="fl">.875</span>, <span class="fl">.885</span>, <span class="fl">.895</span>,</span>
-<span id="cb1-14"><a href="#cb1-14"></a>           <span class="fl">.905</span>, <span class="fl">.915</span>, <span class="fl">.925</span>, <span class="fl">.935</span>, <span class="fl">.945</span>, <span class="fl">.955</span>, <span class="fl">.965</span>, <span class="fl">.975</span>, <span class="fl">.985</span>, <span class="fl">.995</span>)</span>
-<span id="cb1-15"><a href="#cb1-15"></a>    )</span></code></pre></div>
-<p>Now, “obviously” (from what I wrote before), most of the decimal fractions above are <em>not</em> exactly representable as double precision numbers, but of course <em>are</em> representable as fractions, concretely as ratios of (arbitrarily long aka <em>“big num”</em>) integers:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">require</span>(gmp)</span></code></pre></div>
+<p>These two define <em>exact rounding</em> and he would want R to use
+that.</p>
+<p>In the following, I will use that, via exact arithmetic with rational
+numbers via CRAN pkg <a href="https://CRAN.R-project.org/package=gmp">gmp</a> (which is based on
+the free C library <code>GNU MP</code> aka <a href="https://gmplib.org/"><code>GMP</code></a>.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>d1 <span class="ot">&lt;-</span> <span class="fu">c</span>(.<span class="dv">1</span>, .<span class="dv">2</span>, .<span class="dv">3</span>, .<span class="dv">4</span>, .<span class="dv">5</span>, .<span class="dv">6</span>, .<span class="dv">7</span>, .<span class="dv">8</span>, .<span class="dv">9</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>fivers <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">d1 =</span>    .<span class="dv">5</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  , <span class="at">d2 =</span> <span class="fu">c</span>( .<span class="dv">05</span>, .<span class="dv">15</span>,  .<span class="dv">25</span>,  .<span class="dv">35</span>,  .<span class="dv">45</span>,  .<span class="dv">55</span>,  .<span class="dv">65</span>,  .<span class="dv">75</span>,  .<span class="dv">85</span>,  .<span class="dv">95</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  , <span class="at">d3 =</span> <span class="fu">c</span>(.<span class="dv">005</span>, .<span class="dv">015</span>, .<span class="dv">025</span>, .<span class="dv">035</span>, .<span class="dv">045</span>, .<span class="dv">055</span>, .<span class="dv">065</span>, .<span class="dv">075</span>, .<span class="dv">085</span>, .<span class="dv">095</span>,</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">105</span>, .<span class="dv">115</span>, .<span class="dv">125</span>, .<span class="dv">135</span>, .<span class="dv">145</span>, .<span class="dv">155</span>, .<span class="dv">165</span>, .<span class="dv">175</span>, .<span class="dv">185</span>, .<span class="dv">195</span>,</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">205</span>, .<span class="dv">215</span>, .<span class="dv">225</span>, .<span class="dv">235</span>, .<span class="dv">245</span>, .<span class="dv">255</span>, .<span class="dv">265</span>, .<span class="dv">275</span>, .<span class="dv">285</span>, .<span class="dv">295</span>,</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">305</span>, .<span class="dv">315</span>, .<span class="dv">325</span>, .<span class="dv">335</span>, .<span class="dv">345</span>, .<span class="dv">355</span>, .<span class="dv">365</span>, .<span class="dv">375</span>, .<span class="dv">385</span>, .<span class="dv">395</span>,</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">405</span>, .<span class="dv">415</span>, .<span class="dv">425</span>, .<span class="dv">435</span>, .<span class="dv">445</span>, .<span class="dv">455</span>, .<span class="dv">465</span>, .<span class="dv">475</span>, .<span class="dv">485</span>, .<span class="dv">495</span>,</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">505</span>, .<span class="dv">515</span>, .<span class="dv">525</span>, .<span class="dv">535</span>, .<span class="dv">545</span>, .<span class="dv">555</span>, .<span class="dv">565</span>, .<span class="dv">575</span>, .<span class="dv">585</span>, .<span class="dv">595</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">605</span>, .<span class="dv">615</span>, .<span class="dv">625</span>, .<span class="dv">635</span>, .<span class="dv">645</span>, .<span class="dv">655</span>, .<span class="dv">665</span>, .<span class="dv">675</span>, .<span class="dv">685</span>, .<span class="dv">695</span>,</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">705</span>, .<span class="dv">715</span>, .<span class="dv">725</span>, .<span class="dv">735</span>, .<span class="dv">745</span>, .<span class="dv">755</span>, .<span class="dv">765</span>, .<span class="dv">775</span>, .<span class="dv">785</span>, .<span class="dv">795</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">805</span>, .<span class="dv">815</span>, .<span class="dv">825</span>, .<span class="dv">835</span>, .<span class="dv">845</span>, .<span class="dv">855</span>, .<span class="dv">865</span>, .<span class="dv">875</span>, .<span class="dv">885</span>, .<span class="dv">895</span>,</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>           .<span class="dv">905</span>, .<span class="dv">915</span>, .<span class="dv">925</span>, .<span class="dv">935</span>, .<span class="dv">945</span>, .<span class="dv">955</span>, .<span class="dv">965</span>, .<span class="dv">975</span>, .<span class="dv">985</span>, .<span class="dv">995</span>)</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>Now, “obviously” (from what I wrote before), most of the decimal
+fractions above are <em>not</em> exactly representable as double
+precision numbers, but of course <em>are</em> representable as
+fractions, concretely as ratios of (arbitrarily long aka <em>“big
+num”</em>) integers:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(gmp)</span></code></pre></div>
 <pre><code>## Loading required package: gmp</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;gmp&#39;</code></pre>
 <pre><code>## The following objects are masked from &#39;package:base&#39;:
 ## 
 ##     %*%, apply, crossprod, matrix, tcrossprod</code></pre>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>q5er &lt;-<span class="st"> </span><span class="kw">lapply</span>(fivers, as.bigq)</span>
-<span id="cb6-2"><a href="#cb6-2"></a>q5er</span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>q5er <span class="ot">&lt;-</span> <span class="fu">lapply</span>(fivers, as.bigq)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>q5er</span></code></pre></div>
 <pre><code>## $d1
 ## Big Rational (&#39;bigq&#39;) :
 ## [1] 1/2
@@ -450,42 +481,46 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##  [95] 8511803295730237/9007199254740992    8601875288277647/9007199254740992   
 ##  [97] 8691947280825057/9007199254740992    8782019273372467/9007199254740992   
 ##  [99] 8872091265919877/9007199254740992    8962163258467287/9007199254740992</code></pre>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">as.bigz</span>(<span class="dv">2</span>)<span class="op">^</span><span class="dv">60</span> <span class="op">==</span><span class="st"> </span><span class="kw">max</span>(<span class="kw">denominator</span>(q5er<span class="op">$</span>d3))</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">as.bigz</span>(<span class="dv">2</span>)<span class="sc">^</span><span class="dv">60</span> <span class="sc">==</span> <span class="fu">max</span>(<span class="fu">denominator</span>(q5er<span class="sc">$</span>d3))</span></code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
-<p>Now the “exact rounding” has been available in CRAN package <code>gmp</code> since Feb.2020, but in its first versions, we usee “round up”, instead of <code>nearbyint()</code> which would <em>“round to even”</em> as desired, as it is the IEEE default also adhered to by itself. Only from <code>gmp</code> version 0.6-1 on (</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="cf">if</span>(<span class="kw">print</span>(<span class="kw">packageVersion</span>(<span class="st">&quot;gmp&quot;</span>)) <span class="op">&lt;</span><span class="st"> &quot;0.6-1&quot;</span>) {</span>
-<span id="cb10-2"><a href="#cb10-2"></a>    <span class="co">## From &#39;gmp&#39;s namespace, usually &quot;hidden&quot;, needed here :</span></span>
-<span id="cb10-3"><a href="#cb10-3"></a>    is.whole.bigq  &lt;-<span class="st"> </span>gmp<span class="op">:::</span>is.whole.bigq</span>
-<span id="cb10-4"><a href="#cb10-4"></a>    biginteger_mod &lt;-<span class="st"> </span>gmp<span class="op">:::</span>biginteger_mod</span>
-<span id="cb10-5"><a href="#cb10-5"></a>    .mod.bigz &lt;-<span class="st"> </span><span class="cf">function</span>(e1, e2) <span class="kw">.Call</span>(biginteger_mod, e1, e2)</span>
-<span id="cb10-6"><a href="#cb10-6"></a></span>
-<span id="cb10-7"><a href="#cb10-7"></a>  <span class="co">##&#39; rounding to integer a la &quot;nearbyint()&quot; -- i.e. &quot;round to even&quot;</span></span>
-<span id="cb10-8"><a href="#cb10-8"></a>  round0 &lt;-<span class="st"> </span><span class="cf">function</span>(x) {</span>
-<span id="cb10-9"><a href="#cb10-9"></a>      nU &lt;-<span class="st"> </span><span class="kw">as.bigz.bigq</span>(xU &lt;-<span class="st"> </span>x <span class="op">+</span><span class="st"> </span><span class="kw">as.bigq</span>(<span class="dv">1</span>, <span class="dv">2</span>)) <span class="co"># traditional round: .5 rounded up</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a>      <span class="cf">if</span>(<span class="kw">any</span>(I &lt;-<span class="st"> </span><span class="kw">is.whole.bigq</span>(xU))) { <span class="co"># I &lt;==&gt;  x == &lt;n&gt;.5 : &quot;hard case&quot;</span></span>
-<span id="cb10-11"><a href="#cb10-11"></a>          I[I] &lt;-<span class="st"> </span><span class="kw">.mod.bigz</span>(nU[I], 2L) <span class="op">==</span><span class="st"> </span>1L <span class="co"># rounded up is odd  ==&gt; round *down*</span></span>
-<span id="cb10-12"><a href="#cb10-12"></a>          nU[I] &lt;-<span class="st"> </span>nU[I] <span class="op">-</span><span class="st"> </span>1L</span>
-<span id="cb10-13"><a href="#cb10-13"></a>      }</span>
-<span id="cb10-14"><a href="#cb10-14"></a>      nU</span>
-<span id="cb10-15"><a href="#cb10-15"></a>  }</span>
-<span id="cb10-16"><a href="#cb10-16"></a></span>
-<span id="cb10-17"><a href="#cb10-17"></a>  roundQ &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">digits =</span> <span class="dv">0</span>, <span class="dt">r0 =</span> round0) {</span>
-<span id="cb10-18"><a href="#cb10-18"></a>      <span class="co">## round(x * 10^d) / 10^d</span></span>
-<span id="cb10-19"><a href="#cb10-19"></a>      p10 &lt;-<span class="st"> </span><span class="kw">as.bigz</span>(<span class="dv">10</span>) <span class="op">^</span><span class="st"> </span>digits</span>
-<span id="cb10-20"><a href="#cb10-20"></a>      <span class="kw">r0</span>(x <span class="op">*</span><span class="st"> </span>p10) <span class="op">/</span><span class="st"> </span>p10</span>
-<span id="cb10-21"><a href="#cb10-21"></a>  }</span>
-<span id="cb10-22"><a href="#cb10-22"></a></span>
-<span id="cb10-23"><a href="#cb10-23"></a>  <span class="co">##&#39; round() method ==&gt;  arguments = (x, digits)</span></span>
-<span id="cb10-24"><a href="#cb10-24"></a>  round.bigq &lt;-<span class="st"> </span><span class="cf">function</span>(x, <span class="dt">digits =</span> <span class="dv">0</span>) <span class="kw">roundQ</span>(x, digits)</span>
-<span id="cb10-25"><a href="#cb10-25"></a>  <span class="kw">.S3method</span>(<span class="st">&quot;round&quot;</span>,<span class="st">&quot;bigq&quot;</span>, round.bigq)</span>
-<span id="cb10-26"><a href="#cb10-26"></a></span>
-<span id="cb10-27"><a href="#cb10-27"></a>} <span class="cf">else</span> <span class="co">## all the above is part of gmp &gt;= 0.6-1 :</span></span>
-<span id="cb10-28"><a href="#cb10-28"></a>  <span class="kw">withAutoprint</span>({</span>
-<span id="cb10-29"><a href="#cb10-29"></a>    round0</span>
-<span id="cb10-30"><a href="#cb10-30"></a>    roundQ</span>
-<span id="cb10-31"><a href="#cb10-31"></a>    gmp<span class="op">:::</span>round.bigq</span>
-<span id="cb10-32"><a href="#cb10-32"></a>  })</span></code></pre></div>
-<pre><code>## [1] &#39;0.6.1&#39;
+<p>Now the “exact rounding” has been available in CRAN package
+<code>gmp</code> since Feb.2020, but in its first versions, we usee
+“round up”, instead of <code>nearbyint()</code> which would <em>“round
+to even”</em> as desired, as it is the IEEE default also adhered to by
+itself. Only from <code>gmp</code> version 0.6-1 on (</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(<span class="fu">print</span>(<span class="fu">packageVersion</span>(<span class="st">&quot;gmp&quot;</span>)) <span class="sc">&lt;</span> <span class="st">&quot;0.6-1&quot;</span>) {</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="do">## From &#39;gmp&#39;s namespace, usually &quot;hidden&quot;, needed here :</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    is.whole.bigq  <span class="ot">&lt;-</span> gmp<span class="sc">:::</span>is.whole.bigq</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    biginteger_mod <span class="ot">&lt;-</span> gmp<span class="sc">:::</span>biginteger_mod</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    .mod.bigz <span class="ot">&lt;-</span> <span class="cf">function</span>(e1, e2) <span class="fu">.Call</span>(biginteger_mod, e1, e2)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="do">##&#39; rounding to integer a la &quot;nearbyint()&quot; -- i.e. &quot;round to even&quot;</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  round0 <span class="ot">&lt;-</span> <span class="cf">function</span>(x) {</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      nU <span class="ot">&lt;-</span> <span class="fu">as.bigz.bigq</span>(xU <span class="ot">&lt;-</span> x <span class="sc">+</span> <span class="fu">as.bigq</span>(<span class="dv">1</span>, <span class="dv">2</span>)) <span class="co"># traditional round: .5 rounded up</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span>(<span class="fu">any</span>(I <span class="ot">&lt;-</span> <span class="fu">is.whole.bigq</span>(xU))) { <span class="co"># I &lt;==&gt;  x == &lt;n&gt;.5 : &quot;hard case&quot;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>          I[I] <span class="ot">&lt;-</span> <span class="fu">.mod.bigz</span>(nU[I], 2L) <span class="sc">==</span> 1L <span class="co"># rounded up is odd  ==&gt; round *down*</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>          nU[I] <span class="ot">&lt;-</span> nU[I] <span class="sc">-</span> 1L</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      }</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      nU</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  roundQ <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">digits =</span> <span class="dv">0</span>, <span class="at">r0 =</span> round0) {</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="do">## round(x * 10^d) / 10^d</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      p10 <span class="ot">&lt;-</span> <span class="fu">as.bigz</span>(<span class="dv">10</span>) <span class="sc">^</span> digits</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">r0</span>(x <span class="sc">*</span> p10) <span class="sc">/</span> p10</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="do">##&#39; round() method ==&gt;  arguments = (x, digits)</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  round.bigq <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">digits =</span> <span class="dv">0</span>) <span class="fu">roundQ</span>(x, digits)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">.S3method</span>(<span class="st">&quot;round&quot;</span>,<span class="st">&quot;bigq&quot;</span>, round.bigq)</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> <span class="do">## all the above is part of gmp &gt;= 0.6-1 :</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">withAutoprint</span>({</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    round0</span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    roundQ</span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    gmp<span class="sc">:::</span>round.bigq</span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  })</span></code></pre></div>
+<pre><code>## [1] &#39;0.7.2&#39;
 ## &gt; round0
 ## function (x) 
 ## {
@@ -496,7 +531,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##     }
 ##     nU
 ## }
-## &lt;bytecode: 0x52468e8&gt;
+## &lt;bytecode: 0x2068940&gt;
 ## &lt;environment: namespace:gmp&gt;
 ## &gt; roundQ
 ## function (x, digits = 0, r0 = round0) 
@@ -504,20 +539,20 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##     p10 &lt;- as.bigz(10)^digits
 ##     r0(x * p10)/p10
 ## }
-## &lt;bytecode: 0x5240910&gt;
+## &lt;bytecode: 0x2032eb0&gt;
 ## &lt;environment: namespace:gmp&gt;
 ## &gt; gmp:::round.bigq
 ## function (x, digits = 0) 
 ## roundQ(x, digits)
-## &lt;bytecode: 0x5236b40&gt;
+## &lt;bytecode: 0x2007070&gt;
 ## &lt;environment: namespace:gmp&gt;</code></pre>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co">## &quot;simple round&quot; was used in round.bigq() for several months in 2020:</span></span>
-<span id="cb12-2"><a href="#cb12-2"></a>round0s &lt;-<span class="st"> </span><span class="cf">function</span>(x) <span class="kw">as.bigz.bigq</span>(x <span class="op">+</span><span class="st"> </span><span class="kw">as.bigq</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## &quot;simple round&quot; was used in round.bigq() for several months in 2020:</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>round0s <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">as.bigz.bigq</span>(x <span class="sc">+</span> <span class="fu">as.bigq</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div>
 <p>Gives here</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a><span class="kw">round</span>(q5er<span class="op">$</span>d2, <span class="dv">1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(q5er<span class="sc">$</span>d2, <span class="dv">1</span>)</span></code></pre></div>
 <pre><code>## Big Rational (&#39;bigq&#39;) object of length 10:
 ##  [1] 1/10 1/10 1/5  3/10 1/2  3/5  7/10 4/5  4/5  9/10</code></pre>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a><span class="kw">round</span>(q5er<span class="op">$</span>d3, <span class="dv">2</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">round</span>(q5er<span class="sc">$</span>d3, <span class="dv">2</span>)</span></code></pre></div>
 <pre><code>## Big Rational (&#39;bigq&#39;) object of length 100:
 ##   [1] 1/100  1/100  3/100  1/25   1/25   3/50   7/100  7/100  9/100  1/10  
 ##  [11] 1/10   3/25   3/25   7/50   7/50   3/20   17/100 17/100 9/50   1/5   
@@ -529,20 +564,21 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ##  [71] 7/10   71/100 18/25  73/100 37/50  19/25  77/100 39/50  79/100 4/5   
 ##  [81] 81/100 81/100 41/50  83/100 21/25  17/20  43/50  22/25  89/100 9/10  
 ##  [91] 91/100 23/25  93/100 47/50  47/50  19/20  24/25  97/100 49/50  99/100</code></pre>
-<p>Now comparing these with all the <code>round()</code>ing methods from our package <code>round</code>:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="kw">require</span>(round)</span>
-<span id="cb17-2"><a href="#cb17-2"></a></span>
-<span id="cb17-3"><a href="#cb17-3"></a>roundAllX &lt;-<span class="st"> </span><span class="cf">function</span>(x, digits, <span class="dt">versions =</span> roundVersions) {</span>
-<span id="cb17-4"><a href="#cb17-4"></a>    xQ &lt;-<span class="st"> </span><span class="kw">as.bigq</span>(x)</span>
-<span id="cb17-5"><a href="#cb17-5"></a>    M &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="kw">roundAll</span>(x, digits, <span class="dt">versions=</span>versions)</span>
-<span id="cb17-6"><a href="#cb17-6"></a>             , <span class="dt">SxctQ =</span> <span class="kw">asNumeric</span>(<span class="kw">roundQ</span>(xQ, digits, <span class="dt">r0=</span>round0s))</span>
-<span id="cb17-7"><a href="#cb17-7"></a>             ,  <span class="dt">xctQ =</span> <span class="kw">asNumeric</span>(<span class="kw">roundQ</span>(xQ, digits))</span>
-<span id="cb17-8"><a href="#cb17-8"></a>               )</span>
-<span id="cb17-9"><a href="#cb17-9"></a>    <span class="kw">rownames</span>(M) &lt;-<span class="st"> </span><span class="kw">format</span>(x)</span>
-<span id="cb17-10"><a href="#cb17-10"></a>    M</span>
-<span id="cb17-11"><a href="#cb17-11"></a>}</span>
-<span id="cb17-12"><a href="#cb17-12"></a></span>
-<span id="cb17-13"><a href="#cb17-13"></a>(rA1 &lt;-<span class="st"> </span><span class="kw">roundAllX</span>(fivers<span class="op">$</span>d2, <span class="dv">1</span>))</span></code></pre></div>
+<p>Now comparing these with all the <code>round()</code>ing methods from
+our package <code>round</code>:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">require</span>(round)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>roundAllX <span class="ot">&lt;-</span> <span class="cf">function</span>(x, digits, <span class="at">versions =</span> roundVersions) {</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>    xQ <span class="ot">&lt;-</span> <span class="fu">as.bigq</span>(x)</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>    M <span class="ot">&lt;-</span> <span class="fu">cbind</span>(<span class="fu">roundAll</span>(x, digits, <span class="at">versions=</span>versions)</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>             , <span class="at">SxctQ =</span> <span class="fu">asNumeric</span>(<span class="fu">roundQ</span>(xQ, digits, <span class="at">r0=</span>round0s))</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a>             ,  <span class="at">xctQ =</span> <span class="fu">asNumeric</span>(<span class="fu">roundQ</span>(xQ, digits))</span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a>               )</span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">rownames</span>(M) <span class="ot">&lt;-</span> <span class="fu">format</span>(x)</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>    M</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>(rA1 <span class="ot">&lt;-</span> <span class="fu">roundAllX</span>(fivers<span class="sc">$</span>d2, <span class="dv">1</span>))</span></code></pre></div>
 <pre><code>##      sprintf r0.C r1.C r1a.C r2.C r2a.C r3.C r3d.C  r3 SxctQ xctQ
 ## 0.05     0.1  0.0  0.0   0.0  0.0   0.0  0.0   0.0 0.0   0.1  0.1
 ## 0.15     0.1  0.2  0.2   0.2  0.2   0.2  0.1   0.1 0.1   0.1  0.1
@@ -554,8 +590,9 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 0.75     0.8  0.8  0.8   0.8  0.8   0.8  0.8   0.8 0.8   0.8  0.8
 ## 0.85     0.8  0.8  0.8   0.8  0.8   0.8  0.8   0.8 0.8   0.8  0.8
 ## 0.95     0.9  1.0  1.0   1.0  1.0   1.0  0.9   0.9 0.9   0.9  0.9</code></pre>
-<p>with some differences already, and more with <code>digits=2</code> rounding:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>(rA2 &lt;-<span class="st"> </span><span class="kw">roundAllX</span>(fivers<span class="op">$</span>d3, <span class="dv">2</span>))</span></code></pre></div>
+<p>with some differences already, and more with <code>digits=2</code>
+rounding:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>(rA2 <span class="ot">&lt;-</span> <span class="fu">roundAllX</span>(fivers<span class="sc">$</span>d3, <span class="dv">2</span>))</span></code></pre></div>
 <pre><code>##       sprintf r0.C r1.C r1a.C r2.C r2a.C r3.C r3d.C   r3 SxctQ xctQ
 ## 0.005    0.01 0.00 0.00  0.00 0.00  0.00 0.00  0.00 0.00  0.01 0.01
 ## 0.015    0.01 0.02 0.02  0.02 0.02  0.02 0.01  0.01 0.01  0.01 0.01
@@ -657,8 +694,11 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 0.975    0.97 0.98 0.98  0.98 0.98  0.98 0.98  0.98 0.98  0.97 0.97
 ## 0.985    0.98 0.98 0.98  0.98 0.98  0.98 0.98  0.98 0.98  0.98 0.98
 ## 0.995    0.99 1.00 1.00  1.00 1.00  1.00 1.00  1.00 1.00  0.99 0.99</code></pre>
-<p>Not sure, if exact equality is the correct test here. We should really check only if rounding <em>up</em> vs rounding <em>down</em> happens in each case, but the rounded numbers may actually differ at by a few bits (invisibly when printed by R!) :</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="kw">symnum</span>(rA1 <span class="op">==</span><span class="st"> </span>rA1[,<span class="st">&quot;xctQ&quot;</span>])</span></code></pre></div>
+<p>Not sure, if exact equality is the correct test here. We should
+really check only if rounding <em>up</em> vs rounding <em>down</em>
+happens in each case, but the rounded numbers may actually differ at by
+a few bits (invisibly when printed by R!) :</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">symnum</span>(rA1 <span class="sc">==</span> rA1[,<span class="st">&quot;xctQ&quot;</span>])</span></code></pre></div>
 <pre><code>##      s r0 r1.C r1a.C r2.C r2a.C r3.C r3d.C r3 S x
 ## 0.05 . .  .    .     .    .     .    .     .  | |
 ## 0.15 . .  .    .     .    .     .    .     .  | |
@@ -670,7 +710,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 0.75 . .  .    .     .    .     .    .     .  | |
 ## 0.85 . .  .    .     .    .     .    .     .  | |
 ## 0.95 . .  .    .     .    .     .    .     .  | |</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="kw">symnum</span>(rA2 <span class="op">==</span><span class="st"> </span>rA2[,<span class="st">&quot;xctQ&quot;</span>])</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">symnum</span>(rA2 <span class="sc">==</span> rA2[,<span class="st">&quot;xctQ&quot;</span>])</span></code></pre></div>
 <pre><code>##       s r0 r1.C r1a.C r2.C r2a.C r3.C r3d.C r3 S x
 ## 0.005 . .  .    .     .    .     .    .     .  | |
 ## 0.015 . .  .    .     .    .     .    .     .  | |
@@ -774,26 +814,28 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## 0.995 | .  .    .     .    .     .    .     .  | |</code></pre>
 <div id="session-information" class="section level3">
 <h3>Session information</h3>
-<p>(Note half a dozen non-standard packages present only as dependences of <code>rmarkdown</code> we use for rendering this vignette)</p>
-<pre><code>## R version 4.0.3 Patched (2021-01-04 r79786)
+<p>(Note half a dozen non-standard packages present only as dependences
+of <code>rmarkdown</code> we use for rendering this vignette)</p>
+<pre><code>## R version 4.3.1 Patched (2023-10-10 r85312)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
-## Running under: Fedora 32 (Thirty Two)
+## Running under: Fedora Linux 38 (Thirty Eight)
 ## 
 ## Matrix products: default
-## BLAS:   /u/maechler/R/D/r-patched/F32-64-inst/lib/libRblas.so
-## LAPACK: /u/maechler/R/D/r-patched/F32-64-inst/lib/libRlapack.so
+## BLAS:   /u/maechler/R/D/r-patched/F38-64-inst/lib/libRblas.so 
+## LAPACK: /usr/lib64/liblapack.so.3.11.0
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] gmp_0.6-1    round_0.20-0
+## [1] gmp_0.7-2    round_0.21-0
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] compiler_4.0.3  magrittr_2.0.1  htmltools_0.5.0 tools_4.0.3    
-##  [5] yaml_2.2.1      stringi_1.5.3   rmarkdown_2.6   knitr_1.30     
-##  [9] stringr_1.4.0   digest_0.6.27   xfun_0.19       rlang_0.4.10   
-## [13] evaluate_0.14</code></pre>
+##  [1] digest_0.6.33     R6_2.5.1          fastmap_1.1.1     xfun_0.40        
+##  [5] cachem_1.0.8      knitr_1.44        htmltools_0.5.6.1 rmarkdown_2.25   
+##  [9] cli_3.6.1         sass_0.4.7        jquerylib_0.1.4   compiler_4.3.1   
+## [13] tools_4.3.1       evaluate_0.22     bslib_0.5.1       yaml_2.3.7       
+## [17] rlang_1.1.1       jsonlite_1.8.7</code></pre>
 </div>
 </div>
 

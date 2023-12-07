@@ -1,6 +1,6 @@
 Package: round
-Version: 0.21-0
-Date: 2023-10-10
+Version: 0.21-0.1
+Date: 2023-12-07
 Title: Rounding to Decimal Digits
 Authors@R: c(person("Martin","Maechler", role=c("aut","cre"),
                     email="maechler@stat.math.ethz.ch", comment = c(ORCID = "0000-0002-8685-9910"))
@@ -20,9 +20,9 @@ VignetteBuilder: knitr
 URL: https://gitlab.com/mmaechler/round/
 BugReports: https://gitlab.com/mmaechler/round/-/issues
 NeedsCompilation: yes
-Packaged: 2023-10-11 08:12:27 UTC; maechler
+Packaged: 2023-12-07 14:33:03 UTC; maechler
 Author: Martin Maechler [aut, cre] (<https://orcid.org/0000-0002-8685-9910>),
   R-core [ctb] ("r1.C" only)
 Maintainer: Martin Maechler <maechler@stat.math.ethz.ch>
 Repository: CRAN
-Date/Publication: 2023-10-12 14:30:02 UTC
+Date/Publication: 2023-12-07 15:20:02 UTC

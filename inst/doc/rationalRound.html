@@ -353,7 +353,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Exact Decimal Rounding via Rationals</h1>
 <h4 class="author">Martin Mächler</h4>
-<h4 class="date">July 23, 2020; rendered on 2023-10-11</h4>
+<h4 class="date">July 23, 2020; rendered on 2023-12-07</h4>
 
 
 
@@ -520,7 +520,7 @@ itself. Only from <code>gmp</code> version 0.6-1 on (</p>
 <span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    roundQ</span>
 <span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    gmp<span class="sc">:::</span>round.bigq</span>
 <span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>  })</span></code></pre></div>
-<pre><code>## [1] &#39;0.7.2&#39;
+<pre><code>## [1] &#39;0.7.3&#39;
 ## &gt; round0
 ## function (x) 
 ## {
@@ -531,7 +531,7 @@ itself. Only from <code>gmp</code> version 0.6-1 on (</p>
 ##     }
 ##     nU
 ## }
-## &lt;bytecode: 0x2068940&gt;
+## &lt;bytecode: 0x4c04d30&gt;
 ## &lt;environment: namespace:gmp&gt;
 ## &gt; roundQ
 ## function (x, digits = 0, r0 = round0) 
@@ -539,12 +539,12 @@ itself. Only from <code>gmp</code> version 0.6-1 on (</p>
 ##     p10 &lt;- as.bigz(10)^digits
 ##     r0(x * p10)/p10
 ## }
-## &lt;bytecode: 0x2032eb0&gt;
+## &lt;bytecode: 0x49b4348&gt;
 ## &lt;environment: namespace:gmp&gt;
 ## &gt; gmp:::round.bigq
 ## function (x, digits = 0) 
 ## roundQ(x, digits)
-## &lt;bytecode: 0x2007070&gt;
+## &lt;bytecode: 0x4995960&gt;
 ## &lt;environment: namespace:gmp&gt;</code></pre>
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="do">## &quot;simple round&quot; was used in round.bigq() for several months in 2020:</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>round0s <span class="ot">&lt;-</span> <span class="cf">function</span>(x) <span class="fu">as.bigz.bigq</span>(x <span class="sc">+</span> <span class="fu">as.bigq</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span></code></pre></div>
@@ -816,26 +816,26 @@ a few bits (invisibly when printed by R!) :</p>
 <h3>Session information</h3>
 <p>(Note half a dozen non-standard packages present only as dependences
 of <code>rmarkdown</code> we use for rendering this vignette)</p>
-<pre><code>## R version 4.3.1 Patched (2023-10-10 r85312)
+<pre><code>## R version 4.3.2 Patched (2023-12-01 r85659)
 ## Platform: x86_64-pc-linux-gnu (64-bit)
 ## Running under: Fedora Linux 38 (Thirty Eight)
 ## 
 ## Matrix products: default
-## BLAS:   /u/maechler/R/D/r-patched/F38-64-inst/lib/libRblas.so 
+## BLAS:   /sfs/u/maechler/R/D/r-patched/F38-64-inst/lib/libRblas.so 
 ## LAPACK: /usr/lib64/liblapack.so.3.11.0
 ## 
 ## attached base packages:
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] gmp_0.7-2    round_0.21-0
+## [1] gmp_0.7-3      round_0.21-0.1
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] digest_0.6.33     R6_2.5.1          fastmap_1.1.1     xfun_0.40        
-##  [5] cachem_1.0.8      knitr_1.44        htmltools_0.5.6.1 rmarkdown_2.25   
-##  [9] cli_3.6.1         sass_0.4.7        jquerylib_0.1.4   compiler_4.3.1   
-## [13] tools_4.3.1       evaluate_0.22     bslib_0.5.1       yaml_2.3.7       
-## [17] rlang_1.1.1       jsonlite_1.8.7</code></pre>
+##  [1] digest_0.6.33   R6_2.5.1        fastmap_1.1.1   xfun_0.41      
+##  [5] cachem_1.0.8    knitr_1.45      htmltools_0.5.7 rmarkdown_2.25 
+##  [9] lifecycle_1.0.4 cli_3.6.1       sass_0.4.8      jquerylib_0.1.4
+## [13] compiler_4.3.2  tools_4.3.2     evaluate_0.23   bslib_0.6.1    
+## [17] yaml_2.3.7      rlang_1.1.2     jsonlite_1.8.7</code></pre>
 </div>
 </div>
 

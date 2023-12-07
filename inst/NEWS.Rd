@@ -4,6 +4,15 @@
 \title{\pkg{round} R package  News}
 \encoding{UTF-8}
 
+\section{Changes in version 0.21-0.1 [2023-12-07]}{
+  \subsection{Misc}{
+    \itemize{
+      \item \command{R CMD build} now added the \file{*.R} to \code{inst/doc},
+      circumventing \pkg{knitr}'s hack with \env{_R_CHECK_LICENCE_}.
+    }
+  }
+}
+
 \section{Changes in version 0.21-0 [2023-10-10]}{
   \subsection{BUG FIXES}{
     \itemize{

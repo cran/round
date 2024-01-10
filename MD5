@@ -1,4 +1,4 @@
-bda5206e8c7cdc89f501a1230a8c54bb *DESCRIPTION
+4bf496de4d8f102bfd538f4fd9e8698b *DESCRIPTION
 af6d1d2ac40f115a508a98c366453aa8 *LICENSE
 e51271c8c619d465951dcd7140afc3dc *NAMESPACE
 ca1bd98d5363435f543244e61c129b36 *R/mathC99.R
@@ -6,12 +6,14 @@ bc8a13356c6fe58b654bb456f309523e *R/randI.R
 79c116eae0799190ed915ac728572b49 *R/round.R
 e3901ca2d53fd41019898ee3036a3ba7 *README.md
 8faf250d78a120ba4c7ea2186efddd24 *build/partial.rdb
-7211c265c7124e3a98872c72166800a8 *build/vignette.rds
-a33df1b4594ee84b672220287fb5774d *inst/NEWS.Rd
+5355ecfbd79268aa4b9d3a3bedfab1e7 *build/vignette.rds
+158df3d6dd8f4efb61ef640d09265e30 *inst/NEWS.Rd
+c8d8eed2b330a803dd1bdbdc6f083b4f *inst/doc/Rounding.R
 d8dd7399dd105db15df6e1b6fb511d22 *inst/doc/Rounding.Rmd
-827b51ce34a905377efdb32b26549cd9 *inst/doc/Rounding.html
+5cc52ef92cd8354cd9362394d7fabf4a *inst/doc/Rounding.html
+81b5c88cdb019579e3fbcc3d00328e64 *inst/doc/rationalRound.R
 eaf4c35de45d6459da55fdca58d1839d *inst/doc/rationalRound.Rmd
-131130013d97a455bff598e25967a2dc *inst/doc/rationalRound.html
+d892df99ef9ad2514a026072739d2624 *inst/doc/rationalRound.html
 01fb39af8c07e030ea9c2f652087e41a *man/mathC99.Rd
 a3fa4d19c47fb9bd4a26afe80f73449f *man/randI.Rd
 d2b4627e78eaabfb44636655a704467a *man/roundX.Rd

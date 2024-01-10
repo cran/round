@@ -4,6 +4,14 @@
 \title{\pkg{round} R package  News}
 \encoding{UTF-8}
 
+\section{Changes in version 0.21-0.2 [2024-01-10]}{
+  \subsection{Misc}{
+    \itemize{
+      \item 2nd try: \command{R CMD build} added the \file{*.R} to \code{inst/doc}, \dots
+    }
+  }
+}
+
 \section{Changes in version 0.21-0.1 [2023-12-07]}{
   \subsection{Misc}{
     \itemize{
